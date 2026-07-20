@@ -937,7 +937,10 @@
                 worldCopyJump: false,
                 maxBounds: [[-85, -180], [85, 180]],
                 minZoom: 1,
-                maxZoom: 19
+                maxZoom: 19,
+                dragging: window.innerWidth > 768, // Disable dragging on mobile
+                tap: false, // Disable tap-drag on mobile
+                touchZoom: true // Enable pinch zoom
             }).setView([20, 0], initialZoom);
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
