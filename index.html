@@ -907,12 +907,14 @@
             document.getElementById('location-detail').style.display = 'none';
             
             // Initialize map
+            // Use zoom level 1 for mobile to show more of the world, 2 for desktop
+            const initialZoom = window.innerWidth <= 768 ? 1 : 2;
             globalMap = L.map('map', {
                 worldCopyJump: false,
                 maxBounds: [[-85, -180], [85, 180]],
-                minZoom: 2,
+                minZoom: 1,
                 maxZoom: 19
-            }).setView([20, 0], 2);
+            }).setView([20, 0], initialZoom);
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
