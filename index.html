@@ -1125,7 +1125,8 @@
             let html = `
                 <div style="position: sticky; top: 0; background: white; padding: 2rem; padding-bottom: 1rem; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <button onclick="window.location.href='?'" style="padding: 0.75rem 1.5rem; background: #2d5016; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 500; margin-bottom: 1rem;">← Back to Map</button>
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+                    <button onclick="toggleFilters()" id="filter-toggle" style="width: 100%; padding: 0.75rem 1.2rem; background: #2d5016; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 500; margin-bottom: 1rem; display: none;">🔽 Show Filters</button>
+                    <div id="filters-container" style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
             `;
             
             filters.forEach(filter => {
@@ -1184,6 +1185,33 @@
                 }
             });
         }
+        
+        function toggleFilters() {
+            const container = document.getElementById('filters-container');
+            const toggle = document.getElementById('filter-toggle');
+            if (container.style.display === 'none' || container.style.display === '') {
+                container.style.display = 'flex';
+                toggle.textContent = '🔼 Hide Filters';
+            } else {
+                container.style.display = 'none';
+                toggle.textContent = '🔽 Show Filters';
+            }
+        }
+        
+        // Show filter toggle on mobile
+        function initializeMobileFilters() {
+            if (window.innerWidth <= 768) {
+                const toggle = document.getElementById('filter-toggle');
+                const container = document.getElementById('filters-container');
+                if (toggle && container) {
+                    toggle.style.display = 'block';
+                    container.style.display = 'none';
+                }
+            }
+        }
+        
+        window.addEventListener('load', initializeMobileFilters);
+        window.addEventListener('resize', initializeMobileFilters);
         
         function addLocationCard(list, location, index) {
             const card = document.createElement('div');
