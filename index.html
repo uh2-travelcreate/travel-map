@@ -317,6 +317,21 @@
             50% { opacity: 1; }
         }
         
+        .location-tooltip {
+            background-color: #2d5016 !important;
+            border: none !important;
+            box-shadow: 0 2px 8px rgba(45, 80, 22, 0.3) !important;
+            border-radius: 6px !important;
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+            color: white !important;
+        }
+        
+        .location-tooltip::before {
+            border-top-color: #2d5016 !important;
+        }
+        
         .location-card {
             padding: 0.65rem 0.85rem;
             margin-bottom: 0.35rem;
@@ -548,7 +563,7 @@
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
-                    <div class="stat-number">40</div>
+                    <div class="stat-number">39</div>
                     <div class="stat-label">US States</div>
                 </div>
                 <div class="stat-divider"></div>
@@ -563,15 +578,15 @@
                 </div>
             </div>
             <div class="share-box">
-                <h3>Share with Friends</h3>
+                <h3>Go Anywhere!</h3>
                 <div class="share-buttons">
-                    <button class="share-btn" onclick="copyLinkToClipboard()">📋 Copy Link</button>
+                    <button class="share-btn" onclick="goToRandomLocation()">🎲 Random Location</button>
                 </div>
             </div>
         </div>
         <div id="map"></div>
         <div class="sidebar">
-            <h2>My Trips</h2>
+            <h2>Recent Trips</h2>
             <div id="locationsList"></div>
             <div class="empty-state">Click a pin on the map to get started</div>
         </div>
@@ -859,7 +874,7 @@
             { name: 'Providence, Rhode Island', coords: [41.8240, -71.4128], year: 2026, description: 'Renaissance city with theater and cuisine', albumId: 'providence', country: 'USA' },
             { name: 'Raleigh, North Carolina', coords: [35.7796, -78.6382], year: 2026, description: 'North Carolina\'s capital in the Research Triangle', albumId: 'raleigh', country: 'USA' },
             { name: 'Washington, DC', coords: [38.9072, -77.0369], year: 2026, description: 'Nation\'s capital with monuments and museums', albumId: 'washington-dc', country: 'USA' },
-            { name: 'Anchorage, Alaska', coords: [61.2181, -149.9003], year: 2026, description: 'Alaska\'s largest city with mountains and wildlife', albumId: 'anchorage', country: 'USA' },
+            { name: 'Anchorage, Alaska', coords: [61.2181, -149.9003], year: 2026, description: 'Alaska\'s largest city with mountains and wildlife', albumId: 'anchorage', country: 'USA', driveFolder: '14oVtSjHLeGI7blamXXs_00a3wur1dUGf' },
             { name: 'Duluth, Minnesota', coords: [46.7870, -92.0945], year: 2026, description: 'Lake Superior port city with stunning views', albumId: 'duluth', country: 'USA' },
             { name: 'Edmonton, Alberta', coords: [53.5461, -113.4938], year: 2026, description: 'Canada\'s capital of Alberta with river valley', albumId: 'edmonton', country: 'Canada' },
             { name: 'Minneapolis, Minnesota', coords: [44.9778, -93.2650], year: 2026, description: 'Twin City with vibrant arts and music scene', albumId: 'minneapolis', country: 'USA' },
@@ -930,6 +945,17 @@
                     .bindPopup(`<strong>${location.name}</strong>`)
                     .addTo(globalMap);
                 
+                // Create tooltip but don't show it permanently
+                const tooltip = L.tooltip({
+                    permanent: false,
+                    direction: 'top',
+                    offset: [0, -10],
+                    className: 'location-tooltip'
+                })
+                .setContent(location.name);
+                
+                marker.bindTooltip(tooltip);
+                
                 marker.on('click', () => openLocationDetail(index));
                 markers.push(marker);
             });
@@ -988,27 +1014,37 @@
             });
         }
         
+        function goToRandomLocation() {
+            const randomIndex = Math.floor(Math.random() * locations.length);
+            window.location.href = '?location=' + randomIndex;
+        }
+        
         function renderLocations() {
             const list = document.getElementById('locationsList');
             list.innerHTML = '';
             
-            // Sort locations alphabetically by name
-            const sortedLocations = locations.map((location, index) => ({ location, index }))
-                .sort((a, b) => a.location.name.localeCompare(b.location.name));
+            // Define featured locations in alphabetical order
+            const featuredLocationNames = ['Buenos Aires, Argentina', 'Paris, France', 'Shanghai, China', 'St. Augustine, Florida', 'Stockholm, Sweden', 'Tokyo, Japan'];
             
-            const showInitial = 6;
+            // Find the indices of featured locations
+            const featuredIndices = [];
+            featuredLocationNames.forEach(name => {
+                const index = locations.findIndex(loc => loc.name === name);
+                if (index !== -1) {
+                    featuredIndices.push({ location: locations[index], index });
+                }
+            });
             
-            // Display first 6 locations
-            for (let i = 0; i < Math.min(showInitial, sortedLocations.length); i++) {
-                const { location, index } = sortedLocations[i];
+            // Display featured locations
+            featuredIndices.forEach(({ location, index }) => {
                 addLocationCard(list, location, index);
-            }
+            });
             
             // Add "Show More" button if there are more than 6 locations
-            if (sortedLocations.length > showInitial) {
+            if (locations.length > 6) {
                 const showMoreBtn = document.createElement('button');
                 showMoreBtn.style.cssText = 'width: 100%; padding: 0.75rem; margin-top: 1rem; background: #2d5016; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 500; transition: background 0.2s ease;';
-                showMoreBtn.textContent = `Show more (${sortedLocations.length - showInitial} more locations)`;
+                showMoreBtn.textContent = `Show more (${locations.length - 6} more locations)`;
                 showMoreBtn.onmouseover = () => showMoreBtn.style.background = '#1a3d0d';
                 showMoreBtn.onmouseout = () => showMoreBtn.style.background = '#2d5016';
                 
@@ -1035,9 +1071,75 @@
             const sortedLocations = locations.map((location, index) => ({ location, index }))
                 .sort((a, b) => a.location.name.localeCompare(b.location.name));
             
+            // Define continents/regions
+            const filters = [
+                { name: 'All', id: 'all' },
+                { name: 'USA', id: 'usa' },
+                { name: 'Europe', id: 'europe' },
+                { name: 'Asia', id: 'asia' },
+                { name: 'Americas (Non-USA)', id: 'americas' },
+                { name: 'Oceania', id: 'oceania' }
+            ];
+            
+            // Map countries to continents
+            const continentMap = {
+                'USA': 'usa',
+                'Canada': 'americas',
+                'Mexico': 'americas',
+                'Costa Rica': 'americas',
+                'Uruguay': 'americas',
+                'Argentina': 'americas',
+                'Puerto Rico': 'americas',
+                'Netherlands': 'europe',
+                'Denmark': 'europe',
+                'Germany': 'europe',
+                'United Kingdom': 'europe',
+                'Scotland': 'europe',
+                'Ireland': 'europe',
+                'Spain': 'europe',
+                'Portugal': 'europe',
+                'France': 'europe',
+                'Italy': 'europe',
+                'Switzerland': 'europe',
+                'Austria': 'europe',
+                'Poland': 'europe',
+                'Czech Republic': 'europe',
+                'Slovakia': 'europe',
+                'Hungary': 'europe',
+                'Sweden': 'europe',
+                'Norway': 'europe',
+                'Belgium': 'europe',
+                'Luxembourg': 'europe',
+                'Turkey': 'europe',
+                'Greece': 'europe',
+                'Andorra': 'europe',
+                'China': 'asia',
+                'Japan': 'asia',
+                'South Korea': 'asia',
+                'India': 'asia',
+                'UAE': 'asia',
+                'Australia': 'oceania',
+                'New Zealand': 'oceania'
+            };
+            
             let html = `
                 <div style="position: sticky; top: 0; background: white; padding: 2rem; padding-bottom: 1rem; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <button onclick="window.location.href='?'" style="padding: 0.75rem 1.5rem; background: #2d5016; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 500;">← Back to Map</button>
+                    <button onclick="window.location.href='?'" style="padding: 0.75rem 1.5rem; background: #2d5016; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 500; margin-bottom: 1rem;">← Back to Map</button>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+            `;
+            
+            filters.forEach(filter => {
+                html += `
+                    <button onclick="filterLocations('${filter.id}')" 
+                            id="filter-${filter.id}"
+                            style="padding: 0.6rem 1.2rem; background: ${filter.id === 'all' ? '#2d5016' : '#f0f7f3'}; color: ${filter.id === 'all' ? 'white' : '#2d5016'}; border: 2px solid #2d5016; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.3s ease;">
+                        ${filter.name}
+                    </button>
+                `;
+            });
+            
+            html += `
+                    </div>
                 </div>
                 <div style="padding: 2rem; padding-top: 1rem;">
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
@@ -1046,19 +1148,41 @@
             sortedLocations.forEach(({ location, index }) => {
                 const albumLink = albums[location.albumId] || '#';
                 const emoji = location.country === 'USA' ? '🇺🇸' : '🌍';
+                const continent = continentMap[location.country] || 'all';
                 
-                // Regular card version for all locations
                 html += `
-                    <div style="border: 2px solid #2d5016; border-radius: 12px; padding: 1.5rem; cursor: pointer; transition: all 0.3s ease; background: white; box-shadow: 0 2px 8px rgba(45, 80, 22, 0.08);" onclick="window.location.href='?location=${index}&from=list'">
+                    <div class="location-grid-card" data-continent="${continent}" style="border: 2px solid #2d5016; border-radius: 12px; padding: 1.5rem; cursor: pointer; transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); background: white; box-shadow: 0 2px 8px rgba(45, 80, 22, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);" 
+                         onmouseover="this.style.cssText='border: 2px solid #2d5016; border-radius: 12px; padding: 1.5rem; cursor: pointer; background: linear-gradient(135deg, #ffffff 0%, #f0f7f3 100%); box-shadow: 0 16px 32px rgba(45, 80, 22, 0.2), 0 8px 16px rgba(0, 0, 0, 0.1); transform: translateY(-8px) translateX(4px); transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);'"
+                         onmouseout="this.style.cssText='border: 2px solid #2d5016; border-radius: 12px; padding: 1.5rem; cursor: pointer; transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); background: white; box-shadow: 0 2px 8px rgba(45, 80, 22, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);'"
+                         onclick="window.location.href='?location=${index}&from=list'">
                         <h2 style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #333;">${emoji} ${location.name}</h2>
                         <p style="font-size: 0.95rem; color: #666; margin-bottom: 1rem;">${location.description}</p>
-                        <a href="${albumLink}" target="_blank" style="display: inline-block; color: #2d5016; text-decoration: none; font-weight: 500;" onclick="event.stopPropagation();">View photos →</a>
+                        <a href="${albumLink}" target="_blank" style="display: inline-block; color: #2d5016; text-decoration: none; font-weight: 500; transition: all 0.3s ease;" onclick="event.stopPropagation();">View photos →</a>
                     </div>
                 `;
             });
             
             html += `</div></div>`;
             detailPage.innerHTML = html;
+        }
+        
+        function filterLocations(continent) {
+            // Update button styles
+            document.querySelectorAll('[id^="filter-"]').forEach(btn => {
+                btn.style.background = '#f0f7f3';
+                btn.style.color = '#2d5016';
+            });
+            document.getElementById(`filter-${continent}`).style.background = '#2d5016';
+            document.getElementById(`filter-${continent}`).style.color = 'white';
+            
+            // Filter cards
+            document.querySelectorAll('.location-grid-card').forEach(card => {
+                if (continent === 'all' || card.dataset.continent === continent) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
         }
         
         function addLocationCard(list, location, index) {
