@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Travel Experiences</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #2d5016 0%, #1a3d0d 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #ffffff, #e8f5e9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .container {
+            display: flex;
+            flex: 1;
+            gap: 1rem;
+            max-width: 100%;
+            width: 100%;
+            margin: 0 auto;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 220px;
+            height: 620px;
+        }
+        
+        .stats-box {
+            width: 100%;
+            height: auto;
+            flex: 1;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(45, 80, 22, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .share-box {
+            width: 100%;
+            height: auto;
+            flex: 1;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(45, 80, 22, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .share-box h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a3d0d;
+            margin: 0;
+        }
+        
+        .share-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .share-btn {
+            padding: 0.75rem 1rem;
+            background: #2d5016;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        .share-btn:hover {
+            background: #1a3d0d;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 80, 22, 0.2);
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d5016;
+        }
+        
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #2d5016, transparent);
+        }
+        
+        #map {
+            flex: 0 0 1000px;
+            height: 600px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            min-height: 400px;
+            width: 100%;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(45, 80, 22, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+            overflow-y: auto;
+            margin-left: 0;
+            display: flex;
+            flex-direction: column;
+            max-height: 620px;
+        }
+        
+        .sidebar h2 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .year-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .year-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: #f0f0f0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #333;
+            user-select: none;
+            transition: background 0.2s ease;
+        }
+        
+        .year-header:hover {
+            background: #e8e8e8;
+        }
+        
+        .year-header .arrow {
+            transition: transform 0.3s ease;
+            font-size: 1.2rem;
+            display: inline-block;
+        }
+        
+        .year-header.collapsed .arrow {
+            transform: rotate(-90deg);
+        }
+        
+        .year-trips {
+            padding-top: 0.5rem;
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .year-trips.collapsed {
+            max-height: 0;
+            transition: max-height 0.3s ease;
+        }
+        
+        /* Flip Card Styles */
+        .flip-card {
+            background-color: transparent;
+            width: 100%;
+            height: 300px;
+            perspective: 1000px;
+        }
+        
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(45, 80, 22, 0.08);
+        }
+        
+        .flip-card-front {
+            background: white;
+            color: #333;
+            border: 2px solid #2d5016;
+        }
+        
+        .flip-card-back {
+            background-color: #f0f7f3;
+            color: #333;
+            border: 2px solid #2d5016;
+            transform: rotateY(180deg);
+            padding: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .flip-card-back img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .flip-card-back-text {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+            color: white;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .flip-card-hint {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(45, 80, 22, 0.9);
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            pointer-events: none;
+            opacity: 0;
+            animation: fadeInOut 3s ease-in-out infinite;
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+        
+        .location-card {
+            padding: 0.65rem 0.85rem;
+            margin-bottom: 0.35rem;
+            margin-left: 0.5rem;
+            border: 2px solid #2d5016;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white;
+            box-shadow: 0 2px 8px rgba(45, 80, 22, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        
+        .location-card:hover {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f7f3 100%);
+            transform: translateX(6px) translateY(-2px);
+            box-shadow: 0 12px 24px rgba(45, 80, 22, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-color: #2d5016;
+        }
+        
+        .location-card.active {
+            background: linear-gradient(135deg, #2d5016 0%, #1a3d0d 100%);
+            color: white;
+            border-color: #2d5016;
+            box-shadow: 0 8px 16px rgba(45, 80, 22, 0.25);
+        }
+        
+        .location-card h3 {
+            font-size: 0.88rem;
+            margin-bottom: 0.35rem;
+            font-weight: 600;
+            color: #1a3d0d;
+            transition: color 0.3s ease;
+        }
+        
+        .location-card.active h3 {
+            color: white;
+        }
+        
+        .location-card p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+            transition: opacity 0.3s ease;
+        }
+        
+        .location-card.active p {
+            opacity: 0.95;
+            color: white;
+        }
+        
+        .location-link {
+            display: inline-block;
+            font-size: 0.85rem;
+            color: #2d5016;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+        
+        .location-card.active .location-link {
+            color: white;
+        }
+        
+        .location-link:hover {
+            text-decoration: underline;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 0.5rem 0;
+            font-size: 0.85rem;
+            display: none;
+        }
+        
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+        
+        /* Mobile Responsive Design */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 1rem 0.5rem;
+                gap: 1rem;
+            }
+            
+            .left-column {
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .stats-box {
+                flex: 1;
+                height: auto;
+                gap: 1rem;
+            }
+            
+            .share-box {
+                flex: 1;
+                height: auto;
+            }
+            
+            .stat-item {
+                gap: 0.2rem;
+            }
+            
+            .stat-number {
+                font-size: 1.75rem;
+            }
+            
+            .stat-label {
+                font-size: 0.75rem;
+            }
+            
+            .stat-divider {
+                display: none;
+            }
+            
+            #map {
+                flex: 0 0 100% !important;
+                width: 100% !important;
+                height: 400px;
+                border-radius: 12px;
+            }
+            
+            .sidebar {
+                width: 100%;
+                max-height: none;
+                border-radius: 12px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 1.5rem 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+                letter-spacing: 1px;
+            }
+            
+            .subtitle {
+                font-size: 0.9rem;
+            }
+            
+            .left-column {
+                flex-direction: row;
+                height: auto;
+            }
+            
+            .stats-box {
+                gap: 1rem;
+                flex-direction: row;
+                flex: 1;
+            }
+            
+            .stat-item {
+                flex: 1;
+                text-align: center;
+            }
+            
+            .stat-number {
+                font-size: 1.5rem;
+            }
+            
+            .stat-label {
+                font-size: 0.65rem;
+            }
+            
+            .stat-divider {
+                display: none;
+            }
+            
+            .share-box {
+                display: none;
+            }
+            
+            .sidebar h2 {
+                font-size: 1.1rem;
+            }
+            
+            .location-card {
+                padding: 0.6rem 0.75rem;
+                margin-bottom: 0.3rem;
+            }
+            
+            .location-card h3 {
+                font-size: 0.8rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .location-link {
+                font-size: 0.75rem;
+                margin-top: 0.3rem;
+            }
+            
+            #map {
+                flex: 0 0 100% !important;
+                width: 100% !important;
+                height: 400px !important;
+                min-height: 400px !important;
+                border-radius: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>✈️ My Travel Experiences</h1>
+        <p class="subtitle">Click locations on the map to explore my photos and stories</p>
+    </header>
+    
+    <div class="container">
+        <div class="left-column">
+            <div class="stats-box">
+                <div class="stat-item">
+                    <div class="stat-number">41</div>
+                    <div class="stat-label">Countries</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <div class="stat-number">40</div>
+                    <div class="stat-label">US States</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <div class="stat-number">6</div>
+                    <div class="stat-label">Continents</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <div class="stat-number">350+</div>
+                    <div class="stat-label">Flights</div>
+                </div>
+            </div>
+            <div class="share-box">
+                <h3>Share with Friends</h3>
+                <div class="share-buttons">
+                    <button class="share-btn" onclick="copyLinkToClipboard()">📋 Copy Link</button>
+                </div>
+            </div>
+        </div>
+        <div id="map"></div>
+        <div class="sidebar">
+            <h2>My Trips</h2>
+            <div id="locationsList"></div>
+            <div class="empty-state">Click a pin on the map to get started</div>
+        </div>
+    </div>
+    
+    <div id="location-detail" style="display: none; padding: 2rem; background: white; min-height: 100vh;"></div>
+    
+    <script>
+        let markers = [];
+        let globalMap = null;
+        
+        // Define photo albums - each location gets its own album ID
+        // albumId: unique identifier, albumLink: Google Drive folder link
+        const albums = {
+            'copenhagen': 'https://drive.google.com/drive/folders/1Rh3dvxqC9Vd5SKyrEfJGClVI67ZM_XJU',
+            'oslo': 'https://drive.google.com/drive/folders/YOUR_OSLO_ID',
+            'stockholm': 'https://drive.google.com/drive/folders/YOUR_STOCKHOLM_ID',
+            'luxembourg-city': 'https://drive.google.com/drive/folders/YOUR_LUXEMBOURG_CITY_ID',
+            'verdun': 'https://drive.google.com/drive/folders/YOUR_VERDUN_ID',
+            'nancy': 'https://drive.google.com/drive/folders/YOUR_NANCY_ID',
+            'metz': 'https://drive.google.com/drive/folders/YOUR_METZ_ID',
+            'ibiza': 'https://drive.google.com/drive/folders/YOUR_IBIZA_ID',
+            'barcelona': 'https://drive.google.com/drive/folders/YOUR_BARCELONA_ID',
+            'andorra-la-vella': 'https://drive.google.com/drive/folders/YOUR_ANDORRA_LA_VELLA_ID',
+            'paris': 'https://drive.google.com/drive/folders/YOUR_PARIS_ID',
+            'lisbon': 'https://drive.google.com/drive/folders/YOUR_LISBON_ID',
+            'dublin': 'https://drive.google.com/drive/folders/YOUR_DUBLIN_ID',
+            'belfast': 'https://drive.google.com/drive/folders/YOUR_BELFAST_ID',
+            'cliffs-of-moher': 'https://drive.google.com/drive/folders/YOUR_CLIFFS_OF_MOHER_ID',
+            'edinburgh': 'https://drive.google.com/drive/folders/YOUR_EDINBURGH_ID',
+            'loch-ness': 'https://drive.google.com/drive/folders/YOUR_LOCH_NESS_ID',
+            'london': 'https://drive.google.com/drive/folders/YOUR_LONDON_ID',
+            'nice': 'https://drive.google.com/drive/folders/YOUR_NICE_ID',
+            'pisa': 'https://drive.google.com/drive/folders/YOUR_PISA_ID',
+            'florence': 'https://drive.google.com/drive/folders/YOUR_FLORENCE_ID',
+            'rome': 'https://drive.google.com/drive/folders/YOUR_ROME_ID',
+            'naples': 'https://drive.google.com/drive/folders/YOUR_NAPLES_ID',
+            'venice': 'https://drive.google.com/drive/folders/YOUR_VENICE_ID',
+            'milan': 'https://drive.google.com/drive/folders/YOUR_MILAN_ID',
+            'appenzell': 'https://drive.google.com/drive/folders/YOUR_APPENZELL_ID',
+            'munich': 'https://drive.google.com/drive/folders/YOUR_MUNICH_ID',
+            'salzburg': 'https://drive.google.com/drive/folders/YOUR_SALZBURG_ID',
+            'regensburg': 'https://drive.google.com/drive/folders/YOUR_REGENSBURG_ID',
+            'heidelberg': 'https://drive.google.com/drive/folders/YOUR_HEIDELBERG_ID',
+            'frankfurt': 'https://drive.google.com/drive/folders/YOUR_FRANKFURT_ID',
+            'nuremberg': 'https://drive.google.com/drive/folders/YOUR_NUREMBERG_ID',
+            'berchtesgaden': 'https://drive.google.com/drive/folders/YOUR_BERCHTESGADEN_ID',
+            'berlin': 'https://drive.google.com/drive/folders/YOUR_BERLIN_ID',
+            'szczecin': 'https://drive.google.com/drive/folders/YOUR_SZCZECIN_ID',
+            'prague': 'https://drive.google.com/drive/folders/YOUR_PRAGUE_ID',
+            'vienna': 'https://drive.google.com/drive/folders/YOUR_VIENNA_ID',
+            'bratislava': 'https://drive.google.com/drive/folders/YOUR_BRATISLAVA_ID',
+            'budapest': 'https://drive.google.com/drive/folders/YOUR_BUDAPEST_ID',
+            'amsterdam': 'https://drive.google.com/drive/folders/1IMuSkNmHeKQs957kQXwBG7FwDRiI--YS',
+            'bruges': 'https://drive.google.com/drive/folders/YOUR_BRUGES_ID',
+            'brussels': 'https://drive.google.com/drive/folders/YOUR_BRUSSELS_ID',
+            'reykjavik': 'https://drive.google.com/drive/folders/YOUR_REYKJAVIK_ID',
+            'athens': 'https://drive.google.com/drive/folders/YOUR_ATHENS_ID',
+            'santorini': 'https://drive.google.com/drive/folders/YOUR_SANTORINI_ID',
+            'mykonos': 'https://drive.google.com/drive/folders/YOUR_MYKONOS_ID',
+            'ephasus': 'https://drive.google.com/drive/folders/YOUR_EPHASUS_ID',
+            'izmir': 'https://drive.google.com/drive/folders/YOUR_IZMIR_ID',
+            'dubai': 'https://drive.google.com/drive/folders/YOUR_DUBAI_ID',
+            'delhi': 'https://drive.google.com/drive/folders/YOUR_DELHI_ID',
+            'patna': 'https://drive.google.com/drive/folders/YOUR_PATNA_ID',
+            'mumbai': 'https://drive.google.com/drive/folders/YOUR_MUMBAI_ID',
+            'bangalore': 'https://drive.google.com/drive/folders/YOUR_BANGALORE_ID',
+            'shanghai': 'https://drive.google.com/drive/folders/YOUR_SHANGHAI_ID',
+            'seoul': 'https://drive.google.com/drive/folders/YOUR_SEOUL_ID',
+            'tokyo': 'https://drive.google.com/drive/folders/YOUR_TOKYO_ID',
+            'sydney': 'https://drive.google.com/drive/folders/YOUR_SYDNEY_ID',
+            'auckland': 'https://drive.google.com/drive/folders/YOUR_AUCKLAND_ID',
+            'wellington': 'https://drive.google.com/drive/folders/YOUR_WELLINGTON_ID',
+            'buenos-aires': 'https://drive.google.com/drive/folders/YOUR_BUENOS_AIRES_ID',
+            'colonia-del-sacramento': 'https://drive.google.com/drive/folders/YOUR_COLONIA_DEL_SACRAMENTO_ID',
+            'liberia': 'https://drive.google.com/drive/folders/YOUR_LIBERIA_ID',
+            'cancun': 'https://drive.google.com/drive/folders/YOUR_CANCUN_ID',
+            'mexico-city': 'https://drive.google.com/drive/folders/YOUR_MEXICO_CITY_ID',
+            'san-miguel-de-allende': 'https://drive.google.com/drive/folders/YOUR_SAN_MIGUEL_DE_ALLENDE_ID',
+            'michoacan': 'https://drive.google.com/drive/folders/YOUR_MICHOACAN_ID',
+            'san-juan': 'https://drive.google.com/drive/folders/YOUR_SAN_JUAN_ID',
+            'honolulu': 'https://drive.google.com/drive/folders/YOUR_HONOLULU_ID',
+            'waialua': 'https://drive.google.com/drive/folders/YOUR_WAIALUA_ID',
+            'lahaina': 'https://drive.google.com/drive/folders/YOUR_LAHAINA_ID',
+            'los-angeles': 'https://drive.google.com/drive/folders/YOUR_LOS_ANGELES_ID',
+            'san-diego': 'https://drive.google.com/drive/folders/YOUR_SAN_DIEGO_ID',
+            'san-luis-obispo': 'https://drive.google.com/drive/folders/YOUR_SAN_LUIS_OBISPO_ID',
+            'san-francisco': 'https://drive.google.com/drive/folders/YOUR_SAN_FRANCISCO_ID',
+            'santa-catalina-island': 'https://drive.google.com/drive/folders/YOUR_SANTA_CATALINA_ISLAND_ID',
+            'palm-springs': 'https://drive.google.com/drive/folders/YOUR_PALM_SPRINGS_ID',
+            'las-vegas': 'https://drive.google.com/drive/folders/YOUR_LAS_VEGAS_ID',
+            'grand-canyon': 'https://drive.google.com/drive/folders/YOUR_GRAND_CANYON_ID',
+            'sedona': 'https://drive.google.com/drive/folders/YOUR_SEDONA_ID',
+            'phoenix': 'https://drive.google.com/drive/folders/YOUR_PHOENIX_ID',
+            'tucson': 'https://drive.google.com/drive/folders/YOUR_TUCSON_ID',
+            'santa-fe': 'https://drive.google.com/drive/folders/YOUR_SANTA_FE_ID',
+            'denver': 'https://drive.google.com/drive/folders/YOUR_DENVER_ID',
+            'boulder': 'https://drive.google.com/drive/folders/YOUR_BOULDER_ID',
+            'salt-lake-city': 'https://drive.google.com/drive/folders/YOUR_SALT_LAKE_CITY_ID',
+            'portland-oregon': 'https://drive.google.com/drive/folders/YOUR_PORTLAND_OREGON_ID',
+            'seattle': 'https://drive.google.com/drive/folders/YOUR_SEATTLE_ID',
+            'port-angeles': 'https://drive.google.com/drive/folders/YOUR_PORT_ANGELES_ID',
+            'bellingham': 'https://drive.google.com/drive/folders/YOUR_BELLINGHAM_ID',
+            'billings': 'https://drive.google.com/drive/folders/YOUR_BILLINGS_ID',
+            'lovell': 'https://drive.google.com/drive/folders/YOUR_LOVELL_ID',
+            'wall': 'https://drive.google.com/drive/folders/YOUR_WALL_ID',
+            'rapid-city': 'https://drive.google.com/drive/folders/YOUR_RAPID_CITY_ID',
+            'kansas-city': 'https://drive.google.com/drive/folders/YOUR_KANSAS_CITY_ID',
+            'austin': 'https://drive.google.com/drive/folders/YOUR_AUSTIN_ID',
+            'san-antonio': 'https://drive.google.com/drive/folders/YOUR_SAN_ANTONIO_ID',
+            'houston': 'https://drive.google.com/drive/folders/YOUR_HOUSTON_ID',
+            'galveston': 'https://drive.google.com/drive/folders/YOUR_GALVESTON_ID',
+            'st-louis': 'https://drive.google.com/drive/folders/YOUR_ST_LOUIS_ID',
+            'chicago': 'https://drive.google.com/drive/folders/YOUR_CHICAGO_ID',
+            'milwaukee': 'https://drive.google.com/drive/folders/YOUR_MILWAUKEE_ID',
+            'madison': 'https://drive.google.com/drive/folders/YOUR_MADISON_ID',
+            'green-bay': 'https://drive.google.com/drive/folders/YOUR_GREEN_BAY_ID',
+            'indianapolis': 'https://drive.google.com/drive/folders/YOUR_INDIANAPOLIS_ID',
+            'pigeon-forge': 'https://drive.google.com/drive/folders/YOUR_PIGEON_FORGE_ID',
+            'atlanta': 'https://drive.google.com/drive/folders/YOUR_ATLANTA_ID',
+            'st-augustine': 'https://drive.google.com/drive/folders/YOUR_ST_AUGUSTINE_ID',
+            'orlando': 'https://drive.google.com/drive/folders/YOUR_ORLANDO_ID',
+            'tampa': 'https://drive.google.com/drive/folders/YOUR_TAMPA_ID',
+            'miami': 'https://drive.google.com/drive/folders/YOUR_MIAMI_ID',
+            'key-west': 'https://drive.google.com/drive/folders/YOUR_KEY_WEST_ID',
+            'charleston': 'https://drive.google.com/drive/folders/YOUR_CHARLESTON_ID',
+            'raleigh': 'https://drive.google.com/drive/folders/YOUR_RALEIGH_ID',
+            'washington-dc': 'https://drive.google.com/drive/folders/YOUR_WASHINGTON_DC_ID',
+            'philadelphia': 'https://drive.google.com/drive/folders/YOUR_PHILADELPHIA_ID',
+            'wilmington': 'https://drive.google.com/drive/folders/YOUR_WILMINGTON_ID',
+            'columbus': 'https://drive.google.com/drive/folders/YOUR_COLUMBUS_ID',
+            'cleveland': 'https://drive.google.com/drive/folders/YOUR_CLEVELAND_ID',
+            'detroit': 'https://drive.google.com/drive/folders/YOUR_DETROIT_ID',
+            'buffalo': 'https://drive.google.com/drive/folders/YOUR_BUFFALO_ID',
+            'new-york': 'https://drive.google.com/drive/folders/YOUR_NEW_YORK_ID',
+            'long-beach-island': 'https://drive.google.com/drive/folders/YOUR_LONG_BEACH_ISLAND_ID',
+            'mystic': 'https://drive.google.com/drive/folders/YOUR_MYSTIC_ID',
+            'providence': 'https://drive.google.com/drive/folders/YOUR_PROVIDENCE_ID',
+            'newport': 'https://drive.google.com/drive/folders/YOUR_NEWPORT_ID',
+            'boston': 'https://drive.google.com/drive/folders/YOUR_BOSTON_ID',
+            'provincetown': 'https://drive.google.com/drive/folders/YOUR_PROVINCETOWN_ID',
+            'portland-maine': 'https://drive.google.com/drive/folders/YOUR_PORTLAND_MAINE_ID',
+            'lebanon': 'https://drive.google.com/drive/folders/YOUR_LEBANON_ID',
+            'montpelier': 'https://drive.google.com/drive/folders/YOUR_MONTPELIER_ID',
+            'anchorage': 'https://drive.google.com/drive/folders/YOUR_ANCHORAGE_ID',
+            'seward': 'https://drive.google.com/drive/folders/YOUR_SEWARD_ID',
+            'talkeetna': 'https://drive.google.com/drive/folders/YOUR_TALKEETNA_ID',
+            'vancouver-bc': 'https://drive.google.com/drive/folders/YOUR_VANCOUVER_BC_ID',
+            'victoria-bc': 'https://drive.google.com/drive/folders/YOUR_VICTORIA_BC_ID',
+            'edmonton': 'https://drive.google.com/drive/folders/YOUR_EDMONTON_ID',
+            'toronto': 'https://drive.google.com/drive/folders/YOUR_TORONTO_ID',
+            'minneapolis': 'https://drive.google.com/drive/folders/YOUR_MINNEAPOLIS_ID',
+            'duluth': 'https://drive.google.com/drive/folders/YOUR_DULUTH_ID',
+            'rochester-mn': 'https://drive.google.com/drive/folders/YOUR_ROCHESTER_MN_ID',
+            'lisbon': 'https://drive.google.com/drive/folders/YOUR_LISBON_ID',
+            'birmingham': 'https://drive.google.com/drive/folders/YOUR_BIRMINGHAM_ID'
+        };
+        
+        // Sample locations - each location has its own album
+        const locations = [
+            { name: 'Amsterdam, Netherlands', coords: [52.3676, 4.9041], year: 2026, description: 'Canals, museums, and cycling culture', albumId: 'amsterdam', country: 'Netherlands', previewImage: 'https://i.imgur.com/6eC5kjY.jpeg', driveFolder: '1IMuSkNmHeKQs957kQXwBG7FwDRiI--YS' },
+            { name: 'Andorra la Vella, Andorra', coords: [42.5079, 1.5211], year: 2026, description: 'Mountain capital in the Pyrenees', albumId: 'andorra-la-vella', country: 'Andorra' },
+            { name: 'Athens, Greece', coords: [37.9838, 23.7275], year: 2026, description: 'Ancient ruins and Parthenon', albumId: 'athens', country: 'Greece' },
+            { name: 'Auckland, New Zealand', coords: [-37.0082, 174.7850], year: 2026, description: 'Vibrant harbor city and gateway to New Zealand', albumId: 'auckland', country: 'New Zealand' },
+            { name: 'Bangalore, India', coords: [12.9716, 77.5946], year: 2026, description: 'Tech hub in the heart of India', albumId: 'bangalore', country: 'India' },
+            { name: 'Barcelona, Spain', coords: [41.3851, 2.1734], year: 2026, description: 'Gaudí architecture and Mediterranean beaches', albumId: 'barcelona', country: 'Spain' },
+            { name: 'Belfast, Northern Ireland', coords: [54.5973, -5.9301], year: 2026, description: 'Modern shipyard and historic city', albumId: 'belfast', country: 'United Kingdom' },
+            { name: 'Bellingham, Washington', coords: [48.7519, -122.4787], year: 2026, description: 'Charming Pacific Northwest town near mountains and water', albumId: 'bellingham', country: 'USA' },
+            { name: 'Birmingham, Alabama', coords: [33.5186, -86.8104], year: 2026, description: 'Steel city with civil rights history and culture', albumId: 'birmingham', country: 'USA' },
+            { name: 'Berlin, Germany', coords: [52.5200, 13.4050], year: 2026, description: 'Brandenburg Gate, Berlin Wall, and museums', albumId: 'berlin', country: 'Germany' },
+            { name: 'Berchtesgaden, Germany', coords: [47.6398, 12.6362], year: 2026, description: 'Alpine town and mountain gateway', albumId: 'berchtesgaden', country: 'Germany' },
+            { name: 'Boulder, Colorado', coords: [40.0150, -105.2705], year: 2026, description: 'Mountain town with hiking, culture, and outdoor recreation', albumId: 'boulder', country: 'USA' },
+            { name: 'Bratislava, Slovakia', coords: [48.1486, 17.1077], year: 2026, description: 'Castle overlooking the Danube', albumId: 'bratislava', country: 'Slovakia' },
+            { name: 'Bruges, Belgium', coords: [51.2093, 3.2244], year: 2026, description: 'Medieval canals and chocolate shops', albumId: 'bruges', country: 'Belgium' },
+            { name: 'Brussels, Belgium', coords: [50.8503, 4.3517], year: 2026, description: 'Grand Place and Belgian waffles', albumId: 'brussels', country: 'Belgium' },
+            { name: 'Budapest, Hungary', coords: [47.4979, 19.0402], year: 2026, description: 'Thermal baths and Danube views', albumId: 'budapest', country: 'Hungary' },
+            { name: 'Buenos Aires, Argentina', coords: [-34.6037, -58.3816], year: 2026, description: 'Tango, architecture, and European charm', albumId: 'buenos-aires', country: 'Argentina' },
+            { name: 'Cancun, Mexico', coords: [21.1629, -86.8515], year: 2026, description: 'Caribbean beaches and cenotes', albumId: 'cancun', country: 'Mexico' },
+            { name: 'Cliffs of Moher, Ireland', coords: [52.7719, -9.9271], year: 2026, description: 'Dramatic coastal cliffs and Atlantic views', albumId: 'cliffs-of-moher', country: 'Ireland' },
+            { name: 'Copenhagen, Denmark', coords: [55.6761, 12.5683], year: 2026, description: 'Nyhavn, Tivoli Gardens, and Nordic design', albumId: 'copenhagen', country: 'Denmark', driveFolder: '1Rh3dvxqC9Vd5SKyrEfJGClVI67ZM_XJU' },
+            { name: 'Delhi, India', coords: [28.7041, 77.1025], year: 2026, description: 'Capital city with rich history and culture', albumId: 'delhi', country: 'India' },
+            { name: 'Denver, Colorado', coords: [39.7392, -104.9903], year: 2026, description: 'Colorado\'s vibrant capital city with mountains and arts', albumId: 'denver', country: 'USA' },
+            { name: 'Dublin, Ireland', coords: [53.3498, -6.2603], year: 2026, description: 'Literary heritage and Temple Bar', albumId: 'dublin', country: 'Ireland' },
+            { name: 'Dubai, UAE', coords: [25.2048, 55.2708], year: 2026, description: 'Modern metropolis and desert luxury', albumId: 'dubai', country: 'United Arab Emirates' },
+            { name: 'Edinburgh, Scotland', coords: [55.9533, -3.1883], year: 2026, description: 'Castle, Royal Mile, and festival culture', albumId: 'edinburgh', country: 'United Kingdom' },
+            { name: 'Ephasus, Turkey', coords: [37.9391, 27.3704], year: 2026, description: 'Ancient Roman city ruins', albumId: 'ephasus', country: 'Turkey' },
+            { name: 'Florence, Italy', coords: [43.7695, 11.2558], year: 2026, description: 'Renaissance art and architecture', albumId: 'florence', country: 'Italy' },
+            { name: 'Frankfurt, Germany', coords: [50.1109, 8.6821], year: 2026, description: 'Financial hub and Sachsenhausen museums', albumId: 'frankfurt', country: 'Germany' },
+            { name: 'Grand Canyon, Arizona', coords: [36.0726, -112.1129], year: 2026, description: 'Breathtaking natural wonder and iconic national park', albumId: 'grand-canyon', country: 'USA' },
+            { name: 'Heidelberg, Germany', coords: [49.4134, 8.6753], year: 2026, description: 'Romantic university town and castle ruins', albumId: 'heidelberg', country: 'Germany' },
+            { name: 'Honolulu, Hawaii', coords: [21.3099, -157.8581], year: 2026, description: 'Tropical island capital with beaches and Aloha spirit', albumId: 'honolulu', country: 'USA' },
+            { name: 'Ibiza, Spain', coords: [38.9054, 1.4603], year: 2026, description: 'Mediterranean island beaches and culture', albumId: 'ibiza', country: 'Spain' },
+            { name: 'Izmir, Turkey', coords: [38.4161, 27.1398], year: 2026, description: 'Coastal city with ancient history', albumId: 'izmir', country: 'Turkey' },
+            { name: 'Lahaina, Hawaii', coords: [20.8783, -156.6876], year: 2026, description: 'Historic Maui town with beaches and ocean views', albumId: 'lahaina', country: 'USA' },
+            { name: 'Las Vegas, Nevada', coords: [36.1699, -115.1398], year: 2026, description: 'Entertainment capital with shows, casinos, and nightlife', albumId: 'las-vegas', country: 'USA' },
+            { name: 'Liberia, Costa Rica', coords: [10.6313, -85.4422], year: 2026, description: 'Gateway to wildlife and beaches', albumId: 'liberia', country: 'Costa Rica' },
+            { name: 'Lisbon, Portugal', coords: [38.7223, -9.1393], year: 2026, description: 'Historic coastal capital with tiles and trams', albumId: 'lisbon', country: 'Portugal' },
+            { name: 'Loch Ness, Scotland', coords: [57.3268, -4.4745], year: 2026, description: 'Famous loch in the Scottish Highlands', albumId: 'loch-ness', country: 'United Kingdom' },
+            { name: 'London, United Kingdom', coords: [51.5074, -0.1278], year: 2026, description: 'Big Ben, Tower of London, and museums', albumId: 'london', country: 'United Kingdom' },
+            { name: 'Los Angeles, California', coords: [34.0522, -118.2437], year: 2026, description: 'City of angels with beaches, entertainment, and culture', albumId: 'los-angeles', country: 'USA' },
+            { name: 'Luxembourg City, Luxembourg', coords: [49.6116, 6.1319], year: 2026, description: 'TROGSS 2026 conference', albumId: 'luxembourg-city', country: 'Luxembourg' },
+            { name: 'Mexico City, Mexico', coords: [19.4326, -99.1332], year: 2026, description: 'Ancient ruins, museums, and vibrant culture', albumId: 'mexico-city', country: 'Mexico' },
+            { name: 'Metz, France', coords: [49.1193, 6.1757], year: 2026, description: 'Historic city on the Moselle River', albumId: 'metz', country: 'France' },
+            { name: 'Michoacan, Mexico', coords: [19.3910, -101.8355], year: 2026, description: 'Colonial towns and mountain landscapes', albumId: 'michoacan', country: 'Mexico' },
+            { name: 'Milan, Italy', coords: [45.4642, 9.1900], year: 2026, description: 'Fashion capital and Duomo Cathedral', albumId: 'milan', country: 'Italy' },
+            { name: 'Mumbai, India', coords: [19.0760, 72.8777], year: 2026, description: 'Bollywood hub and Gateway of India', albumId: 'mumbai', country: 'India' },
+            { name: 'Munich, Germany', coords: [48.1351, 11.5820], year: 2026, description: 'Bavarian capital with beer halls and palaces', albumId: 'munich', country: 'Germany' },
+            { name: 'Mykonos, Greece', coords: [37.4467, 25.3289], year: 2026, description: 'Cycladic architecture and Mediterranean beaches', albumId: 'mykonos', country: 'Greece' },
+            { name: 'Nancy, France', coords: [48.6921, 6.1844], year: 2026, description: 'Art Nouveau architecture', albumId: 'nancy', country: 'France' },
+            { name: 'Naples, Italy', coords: [40.8518, 14.2681], year: 2026, description: 'Gateway to Pompeii and Mount Vesuvius', albumId: 'naples', country: 'Italy' },
+            { name: 'Nice, France', coords: [43.7102, 7.2620], year: 2026, description: 'Côte d\'Azur beaches and Promenade des Anglais', albumId: 'nice', country: 'France' },
+            { name: 'Nuremberg, Germany', coords: [49.4519, 11.0767], year: 2026, description: 'Medieval old town and historical significance', albumId: 'nuremberg', country: 'Germany' },
+            { name: 'Oslo, Norway', coords: [59.9139, 10.7522], year: 2026, description: 'Viking Ship Museum and fjord views', albumId: 'oslo', country: 'Norway' },
+            { name: 'Palm Springs, California', coords: [33.8303, -116.5453], year: 2026, description: 'Desert resort town with art, design, and relaxation', albumId: 'palm-springs', country: 'USA' },
+            { name: 'Patna, India', coords: [25.5941, 85.1376], year: 2026, description: 'Ancient city on the Ganges River', albumId: 'patna', country: 'India' },
+            { name: 'Paris, France', coords: [48.8566, 2.3522], year: 2026, description: 'Eiffel Tower, museums, and café culture', albumId: 'paris', country: 'France' },
+            { name: 'Phoenix, Arizona', coords: [33.4484, -112.0742], year: 2026, description: 'Arizona\'s sunny capital with desert landscapes', albumId: 'phoenix', country: 'USA' },
+            { name: 'Pisa, Italy', coords: [43.7228, 10.3964], year: 2026, description: 'Leaning Tower and Piazza dei Miracoli', albumId: 'pisa', country: 'Italy' },
+            { name: 'Port Angeles, Washington', coords: [48.1174, -123.4307], year: 2026, description: 'Gateway to Olympic National Park', albumId: 'port-angeles', country: 'USA' },
+            { name: 'Portland, Oregon', coords: [45.5152, -122.6784], year: 2026, description: 'Keep Portland weird - bridges, coffee, and quirky culture', albumId: 'portland-oregon', country: 'USA' },
+            { name: 'Prague, Czech Republic', coords: [50.0755, 14.4378], year: 2026, description: 'Charles Bridge, Prague Castle, and Old Town Square', albumId: 'prague', country: 'Czech Republic' },
+            { name: 'Colonia del Sacramento, Uruguay', coords: [-34.4734, -56.5222], year: 2026, description: 'Historic colonial town with charming waterfront', albumId: 'colonia-del-sacramento', country: 'Uruguay' },
+            { name: 'Regensburg, Germany', coords: [48.5734, 12.1016], year: 2026, description: 'Medieval Danube riverside town', albumId: 'regensburg', country: 'Germany' },
+            { name: 'Reykjavik, Iceland', coords: [64.1466, -21.9426], year: 2026, description: 'Gateway to Iceland\'s natural wonders', albumId: 'reykjavik', country: 'Iceland' },
+            { name: 'Rome, Italy', coords: [41.9028, 12.4964], year: 2026, description: 'Colosseum, Vatican, and ancient history', albumId: 'rome', country: 'Italy' },
+            { name: 'Salt Lake City, Utah', coords: [40.7608, -111.8910], year: 2026, description: 'Mountain valley city with outdoor recreation', albumId: 'salt-lake-city', country: 'USA' },
+            { name: 'Salzburg, Austria', coords: [47.8095, 13.0550], year: 2026, description: 'Mozart\'s birthplace and Alpine setting', albumId: 'salzburg', country: 'Austria' },
+            { name: 'San Diego, California', coords: [32.7157, -117.1611], year: 2026, description: 'Sunny Southern California city with perfect weather', albumId: 'san-diego', country: 'USA' },
+            { name: 'San Francisco, California', coords: [37.7749, -122.4194], year: 2026, description: 'Golden Gate city with iconic bridge and tech culture', albumId: 'san-francisco', country: 'USA' },
+            { name: 'San Juan, Puerto Rico', coords: [18.3667, -66.1235], year: 2026, description: 'Historic old town and Caribbean beaches', albumId: 'san-juan', country: 'Puerto Rico' },
+            { name: 'San Luis Obispo, California', coords: [35.2828, -120.6625], year: 2026, description: 'Charming Central Coast town with wine country', albumId: 'san-luis-obispo', country: 'USA' },
+            { name: 'San Miguel de Allende, Mexico', coords: [20.9148, -101.5052], year: 2026, description: 'Colonial charm and artistic community', albumId: 'san-miguel-de-allende', country: 'Mexico' },
+            { name: 'Santa Catalina Island, California', coords: [33.3817, -118.4223], year: 2026, description: 'Scenic island off the coast of Southern California', albumId: 'santa-catalina-island', country: 'USA' },
+            { name: 'Santa Fe, New Mexico', coords: [35.0853, -106.6056], year: 2026, description: 'Artistic mountain town with adobe architecture and culture', albumId: 'santa-fe', country: 'USA' },
+            { name: 'Santorini, Greece', coords: [36.3932, 25.4615], year: 2026, description: 'White cliffs, sunsets, and volcanic beaches', albumId: 'santorini', country: 'Greece' },
+            { name: 'Seattle, Washington', coords: [47.6062, -122.3321], year: 2026, description: 'Emerald City with Space Needle and coffee culture', albumId: 'seattle', country: 'USA' },
+            { name: 'Sedona, Arizona', coords: [34.8697, -111.7611], year: 2026, description: 'Red rock desert landscape with art and spirituality', albumId: 'sedona', country: 'USA' },
+            { name: 'Seoul, South Korea', coords: [37.5665, 126.9780], year: 2026, description: 'Modern city with ancient temples and palaces', albumId: 'seoul', country: 'South Korea' },
+            { name: 'Shanghai, China', coords: [31.2304, 121.4737], year: 2026, description: 'Futuristic skyline and bund waterfront', albumId: 'shanghai', country: 'China' },
+            { name: 'Stockholm, Sweden', coords: [59.3293, 18.0686], year: 2026, description: 'Gamla Stan and archipelago', albumId: 'stockholm', country: 'Sweden' },
+            { name: 'Sydney, Australia', coords: [-33.8688, 151.2093], year: 2026, description: 'Opera House, beaches, and harbor views', albumId: 'sydney', country: 'Australia' },
+            { name: 'Szczecin, Poland', coords: [53.4285, 14.5528], year: 2026, description: 'Baltic port city with green spaces', albumId: 'szczecin', country: 'Poland' },
+            { name: 'Tokyo, Japan', coords: [35.6762, 139.6503], year: 2026, description: 'Vibrant energy, temples, and neon lights', albumId: 'tokyo', country: 'Japan' },
+            { name: 'Tucson, Arizona', coords: [32.2226, -110.9747], year: 2026, description: 'Arizona\'s second city in the Sonoran Desert', albumId: 'tucson', country: 'USA' },
+            { name: 'Venice, Italy', coords: [45.4408, 12.3155], year: 2026, description: 'Canals, gondolas, and St. Mark\'s Basilica', albumId: 'venice', country: 'Italy' },
+            { name: 'Verdun, France', coords: [49.1597, 5.3890], year: 2026, description: 'Historic WWI battlefields', albumId: 'verdun', country: 'France' },
+            { name: 'Vienna, Austria', coords: [48.2082, 16.3738], year: 2026, description: 'Imperial palaces and classical music heritage', albumId: 'vienna', country: 'Austria' },
+            { name: 'Waialua, Hawaii', coords: [21.5882, -158.1391], year: 2026, description: 'North Shore Oahu town known for waves and beaches', albumId: 'waialua', country: 'USA' },
+            { name: 'Atlanta, Georgia', coords: [33.7490, -84.3880], year: 2026, description: 'Georgia\'s vibrant capital with history and culture', albumId: 'atlanta', country: 'USA' },
+            { name: 'Austin, Texas', coords: [30.2672, -97.7431], year: 2026, description: 'Live Music Capital with vibrant culture and tech scene', albumId: 'austin', country: 'USA' },
+            { name: 'Billings, Montana', coords: [45.7833, -103.8007], year: 2026, description: 'Montana\'s largest city in the heart of the frontier', albumId: 'billings', country: 'USA' },
+            { name: 'Charleston, South Carolina', coords: [32.7765, -79.9318], year: 2026, description: 'Historic coastal city with Southern charm and cuisine', albumId: 'charleston', country: 'USA' },
+            { name: 'Chicago, Illinois', coords: [41.8781, -87.6298], year: 2026, description: 'Windy City with architecture, deep-dish pizza, and culture', albumId: 'chicago', country: 'USA' },
+            { name: 'Galveston, Texas', coords: [29.3028, -94.7974], year: 2026, description: 'Coastal Gulf of Mexico town with beaches and history', albumId: 'galveston', country: 'USA' },
+            { name: 'Green Bay, Wisconsin', coords: [44.5148, -88.0133], year: 2026, description: 'Home of the Packers with Midwestern charm', albumId: 'green-bay', country: 'USA' },
+            { name: 'Houston, Texas', coords: [29.7604, -95.3698], year: 2026, description: 'Space City with diverse culture and energy industry', albumId: 'houston', country: 'USA' },
+            { name: 'Indianapolis, Indiana', coords: [39.7684, -86.1581], year: 2026, description: 'Hoosier capital with racing heritage and culture', albumId: 'indianapolis', country: 'USA' },
+            { name: 'Kansas City, Kansas', coords: [39.0997, -94.5786], year: 2026, description: 'Midwestern hub known for BBQ and jazz heritage', albumId: 'kansas-city', country: 'USA' },
+            { name: 'Key West, Florida', coords: [24.5551, -81.7795], year: 2026, description: 'Southernmost city with tropical vibes and sunsets', albumId: 'key-west', country: 'USA' },
+            { name: 'Lovell, Wyoming', coords: [44.8358, -108.3769], year: 2026, description: 'Small town gateway to Bighorn Mountains', albumId: 'lovell', country: 'USA' },
+            { name: 'Madison, Wisconsin', coords: [43.0731, -89.4012], year: 2026, description: 'College town with lakes, arts, and progressive culture', albumId: 'madison', country: 'USA' },
+            { name: 'Miami, Florida', coords: [25.7617, -80.1918], year: 2026, description: 'Vibrant South Florida city with beaches and Latin culture', albumId: 'miami', country: 'USA' },
+            { name: 'Milwaukee, Wisconsin', coords: [43.0389, -87.9065], year: 2026, description: 'Lake Michigan port city with brewery heritage', albumId: 'milwaukee', country: 'USA' },
+            { name: 'Orlando, Florida', coords: [28.5421, -81.3723], year: 2026, description: 'Theme park capital with attractions and entertainment', albumId: 'orlando', country: 'USA' },
+            { name: 'Pigeon Forge, Tennessee', coords: [35.7857, -83.5805], year: 2026, description: 'Smoky Mountain resort town with attractions and shows', albumId: 'pigeon-forge', country: 'USA' },
+            { name: 'Rapid City, South Dakota', coords: [44.0682, -103.2317], year: 2026, description: 'Gateway to Mount Rushmore and Black Hills', albumId: 'rapid-city', country: 'USA' },
+            { name: 'San Antonio, Texas', coords: [29.4241, -98.4936], year: 2026, description: 'Historic city with River Walk and Spanish heritage', albumId: 'san-antonio', country: 'USA' },
+            { name: 'St. Augustine, Florida', coords: [29.8935, -81.3109], year: 2026, description: 'Oldest continuously occupied European settlement in US', albumId: 'st-augustine', country: 'USA' },
+            { name: 'St. Louis, Missouri', coords: [38.6270, -90.1994], year: 2026, description: 'Gateway Arch city with riverfront and culture', albumId: 'st-louis', country: 'USA' },
+            { name: 'Tampa, Florida', coords: [27.9506, -82.4572], year: 2026, description: 'Gulf Coast city with beaches and sports culture', albumId: 'tampa', country: 'USA' },
+            { name: 'Boston, Massachusetts', coords: [42.3601, -71.0589], year: 2026, description: 'Historic New England city with culture and sports', albumId: 'boston', country: 'USA' },
+            { name: 'Buffalo, New York', coords: [42.8864, -78.8784], year: 2026, description: 'Rust Belt city with Niagara Falls nearby', albumId: 'buffalo', country: 'USA' },
+            { name: 'Cleveland, Ohio', coords: [41.4993, -81.6944], year: 2026, description: 'Lake Erie city with Rock and Roll Hall of Fame', albumId: 'cleveland', country: 'USA' },
+            { name: 'Columbus, Ohio', coords: [39.9612, -82.9988], year: 2026, description: 'Ohio\'s capital with arts and culture', albumId: 'columbus', country: 'USA' },
+            { name: 'Detroit, Michigan', coords: [42.3314, -83.0458], year: 2026, description: 'Motor City with musical heritage and revival', albumId: 'detroit', country: 'USA' },
+            { name: 'Lebanon, New Hampshire', coords: [43.6419, -72.2521], year: 2026, description: 'Connecticut River Valley town near Dartmouth', albumId: 'lebanon', country: 'USA' },
+            { name: 'Long Beach Island, New Jersey', coords: [39.7613, -74.2038], year: 2026, description: 'Jersey Shore barrier island with beaches', albumId: 'long-beach-island', country: 'USA' },
+            { name: 'Montpelier, Vermont', coords: [44.2601, -72.5754], year: 2026, description: 'Vermont\'s charming capital in the Green Mountains', albumId: 'montpelier', country: 'USA' },
+            { name: 'Mystic, Connecticut', coords: [41.3556, -71.9677], year: 2026, description: 'Charming coastal town with maritime heritage', albumId: 'mystic', country: 'USA' },
+            { name: 'Newport, Rhode Island', coords: [41.4901, -71.3128], year: 2026, description: 'Coastal town famous for mansions and sailing', albumId: 'newport', country: 'USA' },
+            { name: 'New York, New York', coords: [40.7128, -74.0060], year: 2026, description: 'The Big Apple with endless culture and energy', albumId: 'new-york', country: 'USA' },
+            { name: 'Philadelphia, Pennsylvania', coords: [39.9526, -75.1652], year: 2026, description: 'City of Brotherly Love with history and arts', albumId: 'philadelphia', country: 'USA' },
+            { name: 'Portland, Maine', coords: [43.6591, -70.2568], year: 2026, description: 'Coastal Maine city with seafood and arts', albumId: 'portland-maine', country: 'USA' },
+            { name: 'Provincetown, Massachusetts', coords: [42.0524, -70.1903], year: 2026, description: 'Cape Cod artists\' colony with vibrant community', albumId: 'provincetown', country: 'USA' },
+            { name: 'Providence, Rhode Island', coords: [41.8240, -71.4128], year: 2026, description: 'Renaissance city with theater and cuisine', albumId: 'providence', country: 'USA' },
+            { name: 'Raleigh, North Carolina', coords: [35.7796, -78.6382], year: 2026, description: 'North Carolina\'s capital in the Research Triangle', albumId: 'raleigh', country: 'USA' },
+            { name: 'Washington, DC', coords: [38.9072, -77.0369], year: 2026, description: 'Nation\'s capital with monuments and museums', albumId: 'washington-dc', country: 'USA' },
+            { name: 'Anchorage, Alaska', coords: [61.2181, -149.9003], year: 2026, description: 'Alaska\'s largest city with mountains and wildlife', albumId: 'anchorage', country: 'USA' },
+            { name: 'Duluth, Minnesota', coords: [46.7870, -92.0945], year: 2026, description: 'Lake Superior port city with stunning views', albumId: 'duluth', country: 'USA' },
+            { name: 'Edmonton, Alberta', coords: [53.5461, -113.4938], year: 2026, description: 'Canada\'s capital of Alberta with river valley', albumId: 'edmonton', country: 'Canada' },
+            { name: 'Minneapolis, Minnesota', coords: [44.9778, -93.2650], year: 2026, description: 'Twin City with vibrant arts and music scene', albumId: 'minneapolis', country: 'USA' },
+            { name: 'Rochester, Minnesota', coords: [44.0065, -92.4830], year: 2026, description: 'Mayo Clinic city with medical heritage', albumId: 'rochester-mn', country: 'USA' },
+            { name: 'Seward, Alaska', coords: [60.1023, -149.4269], year: 2026, description: 'Scenic Alaska coastal town with glacier access', albumId: 'seward', country: 'USA' },
+            { name: 'Talkeetna, Alaska', coords: [62.3226, -150.1064], year: 2026, description: 'Quirky Alaska town with mountain views', albumId: 'talkeetna', country: 'USA' },
+            { name: 'Toronto, Ontario', coords: [43.6532, -79.3832], year: 2026, description: 'Canada\'s largest city with CN Tower and culture', albumId: 'toronto', country: 'Canada' },
+            { name: 'Vancouver, BC', coords: [49.2827, -123.1207], year: 2026, description: 'Pacific Coast city with mountains and diversity', albumId: 'vancouver-bc', country: 'Canada' },
+            { name: 'Victoria, BC', coords: [48.4281, -123.3656], year: 2026, description: 'British Columbia\'s capital on Vancouver Island', albumId: 'victoria-bc', country: 'Canada' },
+            { name: 'Wellington, New Zealand', coords: [-41.2865, 174.7762], year: 2026, description: 'Capital city nestled between harbor and hills', albumId: 'wellington', country: 'New Zealand' }
+        ];
+        
+        // Check if we're on a location detail page
+        const urlParams = new URLSearchParams(window.location.search);
+        const locationIndex = urlParams.get('location');
+        const viewType = urlParams.get('view');
+        
+        if (viewType === 'all-locations') {
+            renderAllLocationsPage();
+        } else if (locationIndex !== null) {
+            showLocationDetail(parseInt(locationIndex));
+        } else {
+            // Show home page with map
+            initializeMap();
+        }
+        
+        function initializeMap() {
+            document.getElementById('map').style.display = 'block';
+            document.getElementById('locationsList').parentElement.parentElement.style.display = 'flex';
+            document.getElementById('location-detail').style.display = 'none';
+            
+            // Initialize map
+            globalMap = L.map('map', {
+                worldCopyJump: false,
+                maxBounds: [[-85, -180], [85, 180]],
+                minZoom: 2,
+                maxZoom: 19
+            }).setView([20, 0], 2);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19,
+                noWrap: true,
+                backgroundColor: '#87CEEB'
+            }).addTo(globalMap);
+            
+            // Set map background
+            globalMap.getContainer().style.backgroundColor = '#87CEEB';
+            
+            // Fix map on resize
+            setTimeout(() => {
+                globalMap.invalidateSize();
+            }, 100);
+            
+            window.addEventListener('resize', () => {
+                if (globalMap) {
+                    globalMap.invalidateSize();
+                }
+            });
+            
+            addMarkers();
+            renderLocations();
+        }
+        
+        function addMarkers() {
+            locations.forEach((location, index) => {
+                const marker = L.marker(location.coords)
+                    .bindPopup(`<strong>${location.name}</strong>`)
+                    .addTo(globalMap);
+                
+                marker.on('click', () => openLocationDetail(index));
+                markers.push(marker);
+            });
+        }
+        
+        function openLocationDetail(index) {
+            window.location.href = '?location=' + index;
+        }
+        
+        function showLocationDetail(index) {
+            const location = locations[index];
+            document.getElementById('map').style.display = 'none';
+            document.getElementById('locationsList').parentElement.parentElement.style.display = 'none';
+            
+            const detailPage = document.getElementById('location-detail');
+            detailPage.style.display = 'block';
+            
+            const albumLink = albums[location.albumId] || '#';
+            let photoGallery = '';
+            
+            // Determine where to go back to
+            const urlParams = new URLSearchParams(window.location.search);
+            const comingFromList = urlParams.get('from') === 'list';
+            const backLink = comingFromList ? '?view=all-locations' : '?';
+            
+            // Add embedded Google Drive folder if available
+            if (location.driveFolder) {
+                photoGallery = `
+                    <div style="margin-top: 2rem; margin-bottom: 2rem;">
+                        <h3 style="font-size: 1.5rem; margin-bottom: 1rem; color: #333;">Photos</h3>
+                        <a href="${albumLink}" target="_blank" style="display: inline-block; padding: 0.75rem 1.5rem; background: #2d5016; color: white; text-decoration: none; border-radius: 6px; font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">View Full Album on Google Drive →</a>
+                        <div style="position: relative; width: 100%; padding-bottom: 66%; background: #f5f5f5; border: 2px solid #2d5016; border-radius: 8px; overflow: hidden;">
+                            <iframe src="https://drive.google.com/embeddedfolderview?id=${location.driveFolder}#grid" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; border-radius: 8px;" allow="autoplay"></iframe>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            detailPage.innerHTML = `
+                <div style="padding: 2rem; background: white;">
+                    <button onclick="window.location.href='${backLink}'" style="margin-bottom: 1rem; padding: 0.75rem 1.5rem; background: #2d5016; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem;">← Back</button>
+                    <h2 style="font-size: 2rem; margin-bottom: 1rem; color: #333;">${location.name}</h2>
+                    <p style="font-size: 1.1rem; color: #666; margin-bottom: 1.5rem;">${location.description}</p>
+                    ${photoGallery}
+                    ${!location.driveFolder ? `<a href="${albumLink}" target="_blank" style="display: inline-block; padding: 1rem 2rem; background: #2d5016; color: white; text-decoration: none; border-radius: 6px; font-size: 1.1rem; font-weight: 600; margin-top: 1rem;">View Full Album on Google Drive →</a>` : ''}
+                </div>
+            `;
+        }
+        
+        function copyLinkToClipboard() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Link copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+        
+        function renderLocations() {
+            const list = document.getElementById('locationsList');
+            list.innerHTML = '';
+            
+            // Sort locations alphabetically by name
+            const sortedLocations = locations.map((location, index) => ({ location, index }))
+                .sort((a, b) => a.location.name.localeCompare(b.location.name));
+            
+            const showInitial = 6;
+            
+            // Display first 6 locations
+            for (let i = 0; i < Math.min(showInitial, sortedLocations.length); i++) {
+                const { location, index } = sortedLocations[i];
+                addLocationCard(list, location, index);
+            }
+            
+            // Add "Show More" button if there are more than 6 locations
+            if (sortedLocations.length > showInitial) {
+                const showMoreBtn = document.createElement('button');
+                showMoreBtn.style.cssText = 'width: 100%; padding: 0.75rem; margin-top: 1rem; background: #2d5016; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 500; transition: background 0.2s ease;';
+                showMoreBtn.textContent = `Show more (${sortedLocations.length - showInitial} more locations)`;
+                showMoreBtn.onmouseover = () => showMoreBtn.style.background = '#1a3d0d';
+                showMoreBtn.onmouseout = () => showMoreBtn.style.background = '#2d5016';
+                
+                showMoreBtn.onclick = () => {
+                    // Navigate to expanded view by adding view parameter
+                    window.location.href = '?view=all-locations';
+                };
+                
+                list.appendChild(showMoreBtn);
+            }
+        }
+        
+        function renderAllLocationsPage() {
+            const mainContainer = document.querySelector('.container');
+            mainContainer.style.display = 'none';
+            
+            const detailPage = document.getElementById('location-detail');
+            detailPage.style.display = 'block';
+            detailPage.style.padding = '0';
+            detailPage.style.background = 'white';
+            detailPage.style.minHeight = '100vh';
+            
+            // Sort locations alphabetically
+            const sortedLocations = locations.map((location, index) => ({ location, index }))
+                .sort((a, b) => a.location.name.localeCompare(b.location.name));
+            
+            let html = `
+                <div style="position: sticky; top: 0; background: white; padding: 2rem; padding-bottom: 1rem; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <button onclick="window.location.href='?'" style="padding: 0.75rem 1.5rem; background: #2d5016; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 500;">← Back to Map</button>
+                </div>
+                <div style="padding: 2rem; padding-top: 1rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+            `;
+            
+            sortedLocations.forEach(({ location, index }) => {
+                const albumLink = albums[location.albumId] || '#';
+                const emoji = location.country === 'USA' ? '🇺🇸' : '🌍';
+                
+                // Regular card version for all locations
+                html += `
+                    <div style="border: 2px solid #2d5016; border-radius: 12px; padding: 1.5rem; cursor: pointer; transition: all 0.3s ease; background: white; box-shadow: 0 2px 8px rgba(45, 80, 22, 0.08);" onclick="window.location.href='?location=${index}&from=list'">
+                        <h2 style="font-size: 1.2rem; margin-bottom: 0.5rem; color: #333;">${emoji} ${location.name}</h2>
+                        <p style="font-size: 0.95rem; color: #666; margin-bottom: 1rem;">${location.description}</p>
+                        <a href="${albumLink}" target="_blank" style="display: inline-block; color: #2d5016; text-decoration: none; font-weight: 500;" onclick="event.stopPropagation();">View photos →</a>
+                    </div>
+                `;
+            });
+            
+            html += `</div></div>`;
+            detailPage.innerHTML = html;
+        }
+        
+        function addLocationCard(list, location, index) {
+            const card = document.createElement('div');
+            card.className = 'location-card';
+            card.style.cursor = 'pointer';
+            const albumLink = albums[location.albumId] || '#';
+            card.innerHTML = `
+                <h3>${location.name}</h3>
+                <a href="${albumLink}" target="_blank" class="location-link" onclick="event.stopPropagation();">View photos →</a>
+            `;
+            card.addEventListener('click', () => openLocationDetail(index));
+            list.appendChild(card);
+        }
+    </script>
+</body>
+</html>
