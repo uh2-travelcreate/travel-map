@@ -28,10 +28,34 @@
             backdrop-filter: blur(10px);
             color: white;
             padding: 2rem;
-            text-align: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             position: relative;
-            overflow: hidden;
+            overflow: visible;
+            text-align: center;
+        }
+        
+        .header-content {
+            text-align: center;
+        }
+        
+        .header-search {
+            position: absolute !important;
+            top: 1.5rem !important;
+            right: 2rem !important;
+            width: 40px !important;
+            max-width: 40px !important;
+            flex-shrink: 0;
+            margin: 0 !important;
+            padding: 0 !important;
+            display: block !important;
+            box-sizing: border-box !important;
+            height: auto !important;
+            transition: width 0.3s ease;
+        }
+        
+        .header-search.expanded {
+            width: 220px !important;
+            max-width: 220px !important;
         }
         
         h1 {
@@ -40,11 +64,30 @@
             font-weight: 700;
             letter-spacing: 2px;
             text-transform: uppercase;
-            background: linear-gradient(45deg, #ffffff, #e8f5e9);
+            background: linear-gradient(90deg, #a8d5ba 0%, #ffffff 50%, #a8d5ba 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            background-size: 200% auto;
             text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+            filter: drop-shadow(0 0 20px rgba(168, 213, 186, 0.4));
+            animation: titleShine 3s ease-in-out infinite, titleFadeIn 0.8s ease-out;
+        }
+        
+        @keyframes titleShine {
+            0%, 100% { background-position: 0% center; }
+            50% { background-position: 100% center; }
+        }
+        
+        @keyframes titleFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .subtitle {
@@ -97,6 +140,177 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
+        }
+        
+        .search-box {
+            width: 100%;
+            height: auto;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(45, 80, 22, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .search-box-header {
+            width: 100% !important;
+            height: auto !important;
+            background: white;
+            padding: 0;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            display: flex !important;
+            align-items: center;
+            position: relative;
+            box-sizing: border-box !important;
+            transition: all 0.3s ease;
+        }
+        
+        .search-box-header.collapsed {
+            width: 40px !important;
+            min-width: 40px !important;
+            height: 40px !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+        
+        .search-box-header.expanded {
+            width: 100% !important;
+            height: 40px !important;
+            background: white !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        .search-icon {
+            cursor: pointer;
+            font-size: 1.5rem;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+        
+        .search-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        .search-box-header.expanded .search-icon {
+            color: #2d5016;
+            cursor: default;
+        }
+        
+        .search-box-header.expanded .search-icon:hover {
+            transform: none;
+        }
+        
+        .search-input-wrapper {
+            display: none;
+            flex: 1;
+            position: relative;
+        }
+        
+        .search-box-header.expanded .search-input-wrapper {
+            display: block;
+        }
+        
+        .search-box-header.collapsed .search-input-wrapper {
+            display: none;
+        }
+        
+        .search-box h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a3d0d;
+            margin: 0;
+        }
+        
+        #searchInput {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #2d5016;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .header-search #searchInput {
+            padding: 0.5rem 0.7rem;
+            font-size: 0.9rem;
+            border: none !important;
+            border-radius: 5px;
+            width: 100% !important;
+            height: 40px !important;
+            box-sizing: border-box !important;
+            display: block !important;
+        }
+        
+        .header-search #searchInput::placeholder {
+            color: #999;
+        }
+        
+        #searchResults {
+            display: none !important;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        #searchResults.active {
+            display: flex !important;
+        }
+        
+        .header-search #searchResults {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-top: 0.5rem;
+            max-height: 350px;
+            padding: 0.5rem;
+            z-index: 1000;
+            box-sizing: border-box !important;
+            display: none !important;
+            flex-direction: column !important;
+        }
+        
+        .header-search #searchResults.active {
+            display: flex !important;
+        }
+        
+        .search-result-item {
+            padding: 0.75rem;
+            background: #f5f5f5;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .search-result-item:hover {
+            background: #2d5016;
+            color: white;
+            transform: translateX(4px);
+        }
+        
+        .header-search .search-result-item {
+            padding: 0.7rem 0.8rem;
+            font-size: 0.9rem;
+            border-radius: 5px;
         }
         
         .share-box h3 {
@@ -506,6 +720,16 @@
                 padding: 1.5rem 1rem;
             }
             
+            .header-search {
+                top: 1rem;
+                right: 1rem;
+                width: 40px;
+            }
+            
+            .header-search.expanded {
+                width: 160px;
+            }
+            
             h1 {
                 font-size: 2rem;
                 letter-spacing: 1px;
@@ -578,8 +802,17 @@
 </head>
 <body>
     <header>
-        <h1>✈️ My Travel Experiences</h1>
-        <p class="subtitle">Click locations on the map to explore my photos and stories</p>
+        <div class="header-content">
+            <h1>✈️ My Travel Experiences</h1>
+            <p class="subtitle">Click destinations on the map to explore my photos and stories</p>
+        </div>
+        <div class="header-search search-box-header collapsed" id="searchBoxContainer">
+            <div class="search-icon" id="searchIcon">🔍</div>
+            <div class="search-input-wrapper" id="searchInputWrapper">
+                <input type="text" id="searchInput" placeholder="Search destinations...">
+                <div id="searchResults"></div>
+            </div>
+        </div>
     </header>
     
     <div class="container">
@@ -929,6 +1162,8 @@
         } else {
             // Show home page with map
             initializeMap();
+            setupSearch();
+            setupCollapsibleSearch();
         }
         
         function initializeMap() {
@@ -1060,6 +1295,81 @@
             window.location.href = '?location=' + randomIndex;
         }
         
+        function setupCollapsibleSearch() {
+            const searchBox = document.getElementById('searchBoxContainer');
+            const searchIcon = document.getElementById('searchIcon');
+            const searchInput = document.getElementById('searchInput');
+            const searchInputWrapper = document.getElementById('searchInputWrapper');
+            
+            // Expand search box when clicking the icon
+            searchIcon.addEventListener('click', () => {
+                searchBox.classList.remove('collapsed');
+                searchBox.classList.add('expanded');
+                searchInput.focus();
+            });
+            
+            // Collapse when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#searchBoxContainer') && searchInput.value.trim() === '') {
+                    searchBox.classList.add('collapsed');
+                    searchBox.classList.remove('expanded');
+                }
+            });
+            
+            // Keep expanded while typing
+            searchInput.addEventListener('focus', () => {
+                searchBox.classList.remove('collapsed');
+                searchBox.classList.add('expanded');
+            });
+        }
+        
+        function setupSearch() {
+
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                searchResults.innerHTML = '';
+                
+                if (query.length === 0) {
+                    searchResults.classList.remove('active');
+                    return;
+                }
+                
+                // Filter locations by name or description
+                const results = locations.filter(loc => 
+                    loc.name.toLowerCase().includes(query) || 
+                    loc.description.toLowerCase().includes(query)
+                );
+                
+                if (results.length === 0) {
+                    searchResults.innerHTML = '<div style="padding: 0.75rem; color: #999; font-size: 0.9rem;">No destinations found</div>';
+                    searchResults.classList.add('active');
+                    return;
+                }
+                
+                results.forEach((location, i) => {
+                    const index = locations.indexOf(location);
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'search-result-item';
+                    resultItem.textContent = location.name;
+                    resultItem.onclick = () => {
+                        window.location.href = '?location=' + index;
+                    };
+                    searchResults.appendChild(resultItem);
+                });
+                
+                searchResults.classList.add('active');
+            });
+            
+            // Close search results when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-box')) {
+                    searchResults.classList.remove('active');
+                }
+            });
+        }
         function renderLocations() {
             const list = document.getElementById('locationsList');
             list.innerHTML = '';
