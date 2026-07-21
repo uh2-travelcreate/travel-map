@@ -19,6 +19,41 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: float 25s ease-in-out infinite;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -20%;
+            left: -5%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(168, 213, 186, 0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: float 30s ease-in-out infinite reverse;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(30px); }
         }
         
         header {
@@ -567,8 +602,8 @@
             #map {
                 flex: 0 0 100% !important;
                 width: 100% !important;
-                height: 400px !important;
-                min-height: 400px !important;
+                height: 70vh !important;
+                min-height: 70vh !important;
                 border-radius: 12px;
             }
         }
@@ -589,7 +624,7 @@
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
-                    <div class="stat-number">39</div>
+                    <div class="stat-number">40</div>
                     <div class="stat-label">US States</div>
                 </div>
                 <div class="stat-divider"></div>
@@ -770,7 +805,6 @@
             'minneapolis': 'https://drive.google.com/drive/folders/YOUR_MINNEAPOLIS_ID',
             'duluth': 'https://drive.google.com/drive/folders/YOUR_DULUTH_ID',
             'rochester-mn': 'https://drive.google.com/drive/folders/YOUR_ROCHESTER_MN_ID',
-            'lisbon': 'https://drive.google.com/drive/folders/YOUR_LISBON_ID',
             'birmingham': 'https://drive.google.com/drive/folders/YOUR_BIRMINGHAM_ID'
         };
         
@@ -866,7 +900,7 @@
             { name: 'Waialua, Hawaii', coords: [21.5882, -158.1391], year: 2026, description: 'North Shore Oahu town known for waves and beaches', albumId: 'waialua', country: 'USA' },
             { name: 'Atlanta, Georgia', coords: [33.7490, -84.3880], year: 2026, description: 'Georgia\'s vibrant capital with history and culture', albumId: 'atlanta', country: 'USA' },
             { name: 'Austin, Texas', coords: [30.2672, -97.7431], year: 2026, description: 'Live Music Capital with vibrant culture and tech scene', albumId: 'austin', country: 'USA' },
-            { name: 'Billings, Montana', coords: [45.7833, -103.8007], year: 2026, description: 'Montana\'s largest city in the heart of the frontier', albumId: 'billings', country: 'USA' },
+            { name: 'Billings, Montana', coords: [45.7833, -108.5007], year: 2026, description: 'Montana\'s largest city in the heart of the frontier', albumId: 'billings', country: 'USA' },
             { name: 'Charleston, South Carolina', coords: [32.7765, -79.9318], year: 2026, description: 'Historic coastal city with Southern charm and cuisine', albumId: 'charleston', country: 'USA' },
             { name: 'Chicago, Illinois', coords: [41.8781, -87.6298], year: 2026, description: 'Windy City with architecture, deep-dish pizza, and culture', albumId: 'chicago', country: 'USA' },
             { name: 'Galveston, Texas', coords: [29.3028, -94.7974], year: 2026, description: 'Coastal Gulf of Mexico town with beaches and history', albumId: 'galveston', country: 'USA' },
@@ -941,7 +975,7 @@
             globalMap = L.map('map', {
                 worldCopyJump: false,
                 maxBounds: [[-85, -180], [85, 180]],
-                minZoom: 2,
+                minZoom: 1,
                 maxZoom: 19,
                 dragging: window.innerWidth > 768, // Disable dragging on mobile
                 tap: false, // Disable tap-drag on mobile
