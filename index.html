@@ -1247,6 +1247,9 @@
             <div style="text-align: center; margin-top: 0.75rem;">
                 <a href="#" id="showForgotPasswordLink" style="color: rgba(255,255,255,0.7); font-size: 0.85rem; text-decoration: underline;">Forgot password?</a>
             </div>
+            <div style="text-align: center; margin-top: 0.5rem;">
+                <a href="#" id="showAccessCodeLink" style="color: rgba(255,255,255,0.7); font-size: 0.85rem; text-decoration: underline;">Enter with Access Code</a>
+            </div>
             <div class="auth-switch">
                 <span>Don't have an account?</span><br>
                 <button type="button" class="auth-btn auth-btn-secondary" id="showSignupBtn">Create Account</button>
@@ -1368,6 +1371,30 @@
                 <button type="button" class="auth-btn auth-btn-secondary" id="resendResetCodeBtn">Resend Code</button>
             </div>
         </div>
+
+        <!-- Access Code Card -->
+        <div class="auth-card" id="accessCodeCard" style="display: none;">
+            <div class="auth-header">
+                <div class="auth-icon">🔓</div>
+                <h2>Access Code</h2>
+                <p class="auth-subtitle">Enter your access code to continue</p>
+            </div>
+            <div id="accessCodeMessage" class="auth-message"></div>
+            <form id="accessCodeForm" class="auth-form" novalidate>
+                <div class="form-group">
+                    <label for="accessCodeInput">Access Code</label>
+                    <input type="password" id="accessCodeInput" required placeholder="Enter code" autocomplete="off">
+                </div>
+                <button type="submit" class="auth-btn auth-btn-primary" id="accessCodeSubmitBtn">
+                    <span class="btn-text">Enter Site</span>
+                    <span class="btn-spinner" style="display: none;"></span>
+                </button>
+            </form>
+            <div class="auth-switch">
+                <span>Have an account?</span><br>
+                <button type="button" class="auth-btn auth-btn-secondary" id="backToLoginFromAccessCodeBtn">Back to Login</button>
+            </div>
+        </div>
     </div>
 
     <!-- ============================================================
@@ -1457,21 +1484,25 @@
         const verifyCard = document.getElementById('verifyCard');
         const forgotPasswordCard = document.getElementById('forgotPasswordCard');
         const resetPasswordCard = document.getElementById('resetPasswordCard');
+        const accessCodeCard = document.getElementById('accessCodeCard');
         const loginForm = document.getElementById('loginForm');
         const signupForm = document.getElementById('signupForm');
         const verifyForm = document.getElementById('verifyForm');
         const forgotPasswordForm = document.getElementById('forgotPasswordForm');
         const resetPasswordForm = document.getElementById('resetPasswordForm');
+        const accessCodeForm = document.getElementById('accessCodeForm');
         const loginMessage = document.getElementById('loginMessage');
         const signupMessage = document.getElementById('signupMessage');
         const verifyMessage = document.getElementById('verifyMessage');
         const forgotPasswordMessage = document.getElementById('forgotPasswordMessage');
         const resetPasswordMessage = document.getElementById('resetPasswordMessage');
+        const accessCodeMessage = document.getElementById('accessCodeMessage');
         const loginSubmitBtn = document.getElementById('loginSubmitBtn');
         const signupSubmitBtn = document.getElementById('signupSubmitBtn');
         const verifySubmitBtn = document.getElementById('verifySubmitBtn');
         const forgotPasswordSubmitBtn = document.getElementById('forgotPasswordSubmitBtn');
         const resetPasswordSubmitBtn = document.getElementById('resetPasswordSubmitBtn');
+        const accessCodeSubmitBtn = document.getElementById('accessCodeSubmitBtn');
         const showSignupBtn = document.getElementById('showSignupBtn');
         const showLoginBtn = document.getElementById('showLoginBtn');
         const goToVerifyBtn = document.getElementById('goToVerifyBtn');
@@ -1481,9 +1512,11 @@
         const backToLoginFromForgotBtn = document.getElementById('backToLoginFromForgotBtn');
         const resendResetCodeBtn = document.getElementById('resendResetCodeBtn');
         const resetPasswordEmailDisplay = document.getElementById('resetPasswordEmailDisplay');
+        const showAccessCodeLink = document.getElementById('showAccessCodeLink');
+        const backToLoginFromAccessCodeBtn = document.getElementById('backToLoginFromAccessCodeBtn');
         const logoutBtn = document.getElementById('logoutBtn');
 
-        const authCards = [loginCard, signupCard, verifyCard, forgotPasswordCard, resetPasswordCard];
+        const authCards = [loginCard, signupCard, verifyCard, forgotPasswordCard, resetPasswordCard, accessCodeCard];
 
         let pendingVerifyEmail = '';
         let pendingResetEmail = '';
@@ -1588,6 +1621,19 @@
             }, 280);
         }
 
+        function switchToAccessCode() {
+            clearAuthMessage(loginMessage);
+            accessCodeForm.reset();
+            clearAuthMessage(accessCodeMessage);
+            const current = authCards.find(c => c.style.display !== 'none');
+            if (current) current.classList.add('auth-card-hide');
+            setTimeout(() => {
+                hideAuthCards();
+                accessCodeCard.style.display = 'block';
+                accessCodeCard.classList.add('auth-card-show');
+            }, 280);
+        }
+
         function showApp() {
             authContainer.classList.add('auth-fade-out');
             setTimeout(() => {
@@ -1611,11 +1657,13 @@
             verifyForm.reset();
             forgotPasswordForm.reset();
             resetPasswordForm.reset();
+            accessCodeForm.reset();
             clearAuthMessage(loginMessage);
             clearAuthMessage(signupMessage);
             clearAuthMessage(verifyMessage);
             clearAuthMessage(forgotPasswordMessage);
             clearAuthMessage(resetPasswordMessage);
+            clearAuthMessage(accessCodeMessage);
         }
 
         // ---- Login ----
@@ -1901,6 +1949,43 @@
             startResendCooldown(resendResetCodeBtn, 60);
         }
 
+        // ---- Access Code ----
+        async function handleAccessCodeLogin(e) {
+            e.preventDefault();
+            clearAuthMessage(accessCodeMessage);
+
+            const code = document.getElementById('accessCodeInput').value.trim();
+
+            if (!code) {
+                showAuthMessage(accessCodeMessage, 'Please enter an access code.', 'error');
+                return;
+            }
+
+            setButtonLoading(accessCodeSubmitBtn, true);
+
+            try {
+                const response = await fetch(`${AUTH_API_BASE}/access-code-login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+
+                const data = await response.json().catch(() => null);
+
+                if (response.ok && data && data.success) {
+                    setLoggedIn();
+                    showAuthMessage(accessCodeMessage, data.message || 'Access granted.', 'success');
+                    setTimeout(showApp, 500);
+                } else {
+                    showAuthMessage(accessCodeMessage, (data && data.message) || 'Incorrect access code.', 'error');
+                }
+            } catch (err) {
+                showAuthMessage(accessCodeMessage, 'Network error. Please check your connection and try again.', 'error');
+            } finally {
+                setButtonLoading(accessCodeSubmitBtn, false);
+            }
+        }
+
         // ---- Logout ----
         function handleLogout() {
             clearLoggedIn();
@@ -1913,14 +1998,20 @@
         verifyForm.addEventListener('submit', handleVerifyCode);
         forgotPasswordForm.addEventListener('submit', handleForgotPassword);
         resetPasswordForm.addEventListener('submit', handleResetPassword);
+        accessCodeForm.addEventListener('submit', handleAccessCodeLogin);
         showSignupBtn.addEventListener('click', switchToSignup);
         showLoginBtn.addEventListener('click', switchToLogin);
         resendCodeBtn.addEventListener('click', handleResendCode);
         resendResetCodeBtn.addEventListener('click', handleResendResetCode);
         backToLoginFromForgotBtn.addEventListener('click', switchToLogin);
+        backToLoginFromAccessCodeBtn.addEventListener('click', switchToLogin);
         showForgotPasswordLink.addEventListener('click', (e) => {
             e.preventDefault();
             switchToForgotPassword();
+        });
+        showAccessCodeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchToAccessCode();
         });
         goToVerifyBtn.addEventListener('click', () => {
             switchToVerify(document.getElementById('loginEmail').value.trim());
