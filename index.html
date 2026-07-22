@@ -1244,6 +1244,9 @@
                 </button>
                 <button type="button" class="auth-btn auth-btn-secondary" id="goToVerifyBtn" style="display: none;">Enter verification code</button>
             </form>
+            <div style="text-align: center; margin-top: 0.75rem;">
+                <a href="#" id="showForgotPasswordLink" style="color: rgba(255,255,255,0.7); font-size: 0.85rem; text-decoration: underline;">Forgot password?</a>
+            </div>
             <div class="auth-switch">
                 <span>Don't have an account?</span><br>
                 <button type="button" class="auth-btn auth-btn-secondary" id="showSignupBtn">Create Account</button>
@@ -1306,6 +1309,63 @@
             <div class="auth-switch">
                 <span>Didn't get a code?</span><br>
                 <button type="button" class="auth-btn auth-btn-secondary" id="resendCodeBtn">Resend Code</button>
+            </div>
+        </div>
+
+        <!-- Forgot Password Card -->
+        <div class="auth-card" id="forgotPasswordCard" style="display: none;">
+            <div class="auth-header">
+                <div class="auth-icon">🔑</div>
+                <h2>Forgot Password</h2>
+                <p class="auth-subtitle">Enter your email and we'll send you a reset code</p>
+            </div>
+            <div id="forgotPasswordMessage" class="auth-message"></div>
+            <form id="forgotPasswordForm" class="auth-form" novalidate>
+                <div class="form-group">
+                    <label for="forgotPasswordEmail">Email</label>
+                    <input type="email" id="forgotPasswordEmail" required placeholder="you@example.com" autocomplete="email">
+                </div>
+                <button type="submit" class="auth-btn auth-btn-primary" id="forgotPasswordSubmitBtn">
+                    <span class="btn-text">Send Reset Code</span>
+                    <span class="btn-spinner" style="display: none;"></span>
+                </button>
+            </form>
+            <div class="auth-switch">
+                <span>Remembered your password?</span><br>
+                <button type="button" class="auth-btn auth-btn-secondary" id="backToLoginFromForgotBtn">Back to Login</button>
+            </div>
+        </div>
+
+        <!-- Reset Password Card -->
+        <div class="auth-card" id="resetPasswordCard" style="display: none;">
+            <div class="auth-header">
+                <div class="auth-icon">🔒</div>
+                <h2>Reset Password</h2>
+                <p class="auth-subtitle">Enter the code sent to <span id="resetPasswordEmailDisplay"></span></p>
+                <p class="auth-note">Don't see it? Check your spam or junk folder.</p>
+            </div>
+            <div id="resetPasswordMessage" class="auth-message"></div>
+            <form id="resetPasswordForm" class="auth-form" novalidate>
+                <div class="form-group">
+                    <label for="resetCode">Reset Code</label>
+                    <input type="text" id="resetCode" required placeholder="123456" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+                </div>
+                <div class="form-group">
+                    <label for="resetNewPassword">New Password</label>
+                    <input type="password" id="resetNewPassword" required placeholder="••••••••" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="resetConfirmPassword">Confirm New Password</label>
+                    <input type="password" id="resetConfirmPassword" required placeholder="••••••••" autocomplete="new-password">
+                </div>
+                <button type="submit" class="auth-btn auth-btn-primary" id="resetPasswordSubmitBtn">
+                    <span class="btn-text">Reset Password</span>
+                    <span class="btn-spinner" style="display: none;"></span>
+                </button>
+            </form>
+            <div class="auth-switch">
+                <span>Didn't get a code?</span><br>
+                <button type="button" class="auth-btn auth-btn-secondary" id="resendResetCodeBtn">Resend Code</button>
             </div>
         </div>
     </div>
@@ -1395,23 +1455,38 @@
         const loginCard = document.getElementById('loginCard');
         const signupCard = document.getElementById('signupCard');
         const verifyCard = document.getElementById('verifyCard');
+        const forgotPasswordCard = document.getElementById('forgotPasswordCard');
+        const resetPasswordCard = document.getElementById('resetPasswordCard');
         const loginForm = document.getElementById('loginForm');
         const signupForm = document.getElementById('signupForm');
         const verifyForm = document.getElementById('verifyForm');
+        const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+        const resetPasswordForm = document.getElementById('resetPasswordForm');
         const loginMessage = document.getElementById('loginMessage');
         const signupMessage = document.getElementById('signupMessage');
         const verifyMessage = document.getElementById('verifyMessage');
+        const forgotPasswordMessage = document.getElementById('forgotPasswordMessage');
+        const resetPasswordMessage = document.getElementById('resetPasswordMessage');
         const loginSubmitBtn = document.getElementById('loginSubmitBtn');
         const signupSubmitBtn = document.getElementById('signupSubmitBtn');
         const verifySubmitBtn = document.getElementById('verifySubmitBtn');
+        const forgotPasswordSubmitBtn = document.getElementById('forgotPasswordSubmitBtn');
+        const resetPasswordSubmitBtn = document.getElementById('resetPasswordSubmitBtn');
         const showSignupBtn = document.getElementById('showSignupBtn');
         const showLoginBtn = document.getElementById('showLoginBtn');
         const goToVerifyBtn = document.getElementById('goToVerifyBtn');
         const resendCodeBtn = document.getElementById('resendCodeBtn');
         const verifyEmailDisplay = document.getElementById('verifyEmailDisplay');
+        const showForgotPasswordLink = document.getElementById('showForgotPasswordLink');
+        const backToLoginFromForgotBtn = document.getElementById('backToLoginFromForgotBtn');
+        const resendResetCodeBtn = document.getElementById('resendResetCodeBtn');
+        const resetPasswordEmailDisplay = document.getElementById('resetPasswordEmailDisplay');
         const logoutBtn = document.getElementById('logoutBtn');
 
+        const authCards = [loginCard, signupCard, verifyCard, forgotPasswordCard, resetPasswordCard];
+
         let pendingVerifyEmail = '';
+        let pendingResetEmail = '';
 
         // ---- Session ----
         function isLoggedIn() {
@@ -1444,7 +1519,7 @@
         }
 
         function hideAuthCards() {
-            [loginCard, signupCard, verifyCard].forEach(card => {
+            authCards.forEach(card => {
                 card.style.display = 'none';
                 card.classList.remove('auth-card-hide', 'auth-card-show');
             });
@@ -1452,7 +1527,7 @@
 
         function switchToSignup() {
             clearAuthMessage(loginMessage);
-            const current = [loginCard, signupCard, verifyCard].find(c => c.style.display !== 'none');
+            const current = authCards.find(c => c.style.display !== 'none');
             if (current) current.classList.add('auth-card-hide');
             setTimeout(() => {
                 hideAuthCards();
@@ -1464,7 +1539,7 @@
         function switchToLogin() {
             clearAuthMessage(signupMessage);
             goToVerifyBtn.style.display = 'none';
-            const current = [loginCard, signupCard, verifyCard].find(c => c.style.display !== 'none');
+            const current = authCards.find(c => c.style.display !== 'none');
             if (current) current.classList.add('auth-card-hide');
             setTimeout(() => {
                 hideAuthCards();
@@ -1477,12 +1552,39 @@
             verifyEmailDisplay.textContent = email;
             clearAuthMessage(verifyMessage);
             verifyForm.reset();
-            const current = [loginCard, signupCard, verifyCard].find(c => c.style.display !== 'none');
+            const current = authCards.find(c => c.style.display !== 'none');
             if (current) current.classList.add('auth-card-hide');
             setTimeout(() => {
                 hideAuthCards();
                 verifyCard.style.display = 'block';
                 verifyCard.classList.add('auth-card-show');
+            }, 280);
+        }
+
+        function switchToForgotPassword() {
+            clearAuthMessage(loginMessage);
+            forgotPasswordForm.reset();
+            clearAuthMessage(forgotPasswordMessage);
+            const current = authCards.find(c => c.style.display !== 'none');
+            if (current) current.classList.add('auth-card-hide');
+            setTimeout(() => {
+                hideAuthCards();
+                forgotPasswordCard.style.display = 'block';
+                forgotPasswordCard.classList.add('auth-card-show');
+            }, 280);
+        }
+
+        function switchToResetPassword(email) {
+            pendingResetEmail = email;
+            resetPasswordEmailDisplay.textContent = email;
+            clearAuthMessage(resetPasswordMessage);
+            resetPasswordForm.reset();
+            const current = authCards.find(c => c.style.display !== 'none');
+            if (current) current.classList.add('auth-card-hide');
+            setTimeout(() => {
+                hideAuthCards();
+                resetPasswordCard.style.display = 'block';
+                resetPasswordCard.classList.add('auth-card-show');
             }, 280);
         }
 
@@ -1507,9 +1609,13 @@
             loginForm.reset();
             signupForm.reset();
             verifyForm.reset();
+            forgotPasswordForm.reset();
+            resetPasswordForm.reset();
             clearAuthMessage(loginMessage);
             clearAuthMessage(signupMessage);
             clearAuthMessage(verifyMessage);
+            clearAuthMessage(forgotPasswordMessage);
+            clearAuthMessage(resetPasswordMessage);
         }
 
         // ---- Login ----
@@ -1642,6 +1748,22 @@
             }
         }
 
+        function startResendCooldown(button, seconds) {
+            const originalLabel = button.textContent;
+            let secondsLeft = seconds;
+            const tick = () => {
+                if (secondsLeft > 0) {
+                    button.textContent = `Resend Code (${secondsLeft}s)`;
+                    secondsLeft -= 1;
+                    setTimeout(tick, 1000);
+                } else {
+                    button.textContent = originalLabel;
+                    button.disabled = false;
+                }
+            };
+            tick();
+        }
+
         async function handleResendCode() {
             clearAuthMessage(verifyMessage);
             resendCodeBtn.disabled = true;
@@ -1664,19 +1786,119 @@
                 showAuthMessage(verifyMessage, 'Network error. Please try again.', 'error');
             }
 
-            let secondsLeft = 60;
-            const originalLabel = 'Resend Code';
-            const tick = () => {
-                if (secondsLeft > 0) {
-                    resendCodeBtn.textContent = `Resend Code (${secondsLeft}s)`;
-                    secondsLeft -= 1;
-                    setTimeout(tick, 1000);
+            startResendCooldown(resendCodeBtn, 60);
+        }
+
+        // ---- Forgot / Reset Password ----
+        async function handleForgotPassword(e) {
+            e.preventDefault();
+            clearAuthMessage(forgotPasswordMessage);
+
+            const email = document.getElementById('forgotPasswordEmail').value.trim();
+
+            if (!email) {
+                showAuthMessage(forgotPasswordMessage, 'Please enter your email.', 'error');
+                return;
+            }
+
+            setButtonLoading(forgotPasswordSubmitBtn, true);
+
+            try {
+                const response = await fetch(`${AUTH_API_BASE}/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json().catch(() => null);
+
+                if (response.ok && data && data.success) {
+                    showAuthMessage(forgotPasswordMessage, data.message || 'If an account exists for that email, a reset code has been sent.', 'success');
+                    setTimeout(() => {
+                        switchToResetPassword(email);
+                    }, 1200);
                 } else {
-                    resendCodeBtn.textContent = originalLabel;
-                    resendCodeBtn.disabled = false;
+                    showAuthMessage(forgotPasswordMessage, (data && data.message) || 'Something went wrong. Please try again.', 'error');
                 }
-            };
-            tick();
+            } catch (err) {
+                showAuthMessage(forgotPasswordMessage, 'Network error. Please check your connection and try again.', 'error');
+            } finally {
+                setButtonLoading(forgotPasswordSubmitBtn, false);
+            }
+        }
+
+        async function handleResetPassword(e) {
+            e.preventDefault();
+            clearAuthMessage(resetPasswordMessage);
+
+            const code = document.getElementById('resetCode').value.trim();
+            const newPassword = document.getElementById('resetNewPassword').value;
+            const confirmPassword = document.getElementById('resetConfirmPassword').value;
+
+            if (!code) {
+                showAuthMessage(resetPasswordMessage, 'Please enter the reset code.', 'error');
+                return;
+            }
+            if (!newPassword) {
+                showAuthMessage(resetPasswordMessage, 'Please enter a new password.', 'error');
+                return;
+            }
+            if (newPassword !== confirmPassword) {
+                showAuthMessage(resetPasswordMessage, 'Passwords do not match.', 'error');
+                return;
+            }
+
+            setButtonLoading(resetPasswordSubmitBtn, true);
+
+            try {
+                const response = await fetch(`${AUTH_API_BASE}/reset-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: pendingResetEmail, code, newPassword })
+                });
+
+                const data = await response.json().catch(() => null);
+
+                if (response.ok && data && data.success) {
+                    const successMessage = data.message || 'Password reset successfully.';
+                    showAuthMessage(resetPasswordMessage, successMessage, 'success');
+                    setTimeout(() => {
+                        switchToLogin();
+                        showAuthMessage(loginMessage, successMessage, 'success');
+                    }, 1500);
+                } else {
+                    showAuthMessage(resetPasswordMessage, (data && data.message) || 'Incorrect or expired code.', 'error');
+                }
+            } catch (err) {
+                showAuthMessage(resetPasswordMessage, 'Network error. Please check your connection and try again.', 'error');
+            } finally {
+                setButtonLoading(resetPasswordSubmitBtn, false);
+            }
+        }
+
+        async function handleResendResetCode() {
+            clearAuthMessage(resetPasswordMessage);
+            resendResetCodeBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${AUTH_API_BASE}/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: pendingResetEmail })
+                });
+
+                const data = await response.json().catch(() => null);
+
+                if (response.ok && data && data.success) {
+                    showAuthMessage(resetPasswordMessage, data.message || 'A new code has been sent.', 'success');
+                } else {
+                    showAuthMessage(resetPasswordMessage, (data && data.message) || 'Could not resend the code.', 'error');
+                }
+            } catch (err) {
+                showAuthMessage(resetPasswordMessage, 'Network error. Please try again.', 'error');
+            }
+
+            startResendCooldown(resendResetCodeBtn, 60);
         }
 
         // ---- Logout ----
@@ -1689,9 +1911,17 @@
         loginForm.addEventListener('submit', handleLogin);
         signupForm.addEventListener('submit', handleSignup);
         verifyForm.addEventListener('submit', handleVerifyCode);
+        forgotPasswordForm.addEventListener('submit', handleForgotPassword);
+        resetPasswordForm.addEventListener('submit', handleResetPassword);
         showSignupBtn.addEventListener('click', switchToSignup);
         showLoginBtn.addEventListener('click', switchToLogin);
         resendCodeBtn.addEventListener('click', handleResendCode);
+        resendResetCodeBtn.addEventListener('click', handleResendResetCode);
+        backToLoginFromForgotBtn.addEventListener('click', switchToLogin);
+        showForgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchToForgotPassword();
+        });
         goToVerifyBtn.addEventListener('click', () => {
             switchToVerify(document.getElementById('loginEmail').value.trim());
         });
