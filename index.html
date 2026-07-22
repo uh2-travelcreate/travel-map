@@ -784,7 +784,8 @@
                 border-radius: 12px;
             }
         }
-        
+        }
+
         @media (max-width: 768px) {
             header {
                 padding: 1.5rem 1rem;
@@ -868,14 +869,404 @@
                 border-radius: 12px;
             }
         }
+
+        /* ============================================================
+           Authentication
+           ============================================================ */
+        .app-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            width: 100%;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 1.5rem;
+            right: 5.5rem;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.25s ease;
+            z-index: 20;
+            font-family: inherit;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.22);
+            transform: translateY(-1px);
+        }
+
+        /* Avoid visual overlap when the header search box expands over it */
+        header:has(#searchBoxContainer.expanded) .logout-btn {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .logout-btn {
+                top: 1rem;
+                right: 4rem;
+                padding: 0.4rem 0.7rem;
+                font-size: 0.75rem;
+            }
+        }
+
+        .auth-container {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #2d5016 0%, #1a3d0d 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            overflow: hidden;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            transition: opacity 0.6s ease, filter 0.6s ease;
+        }
+
+        .auth-container.auth-fade-out {
+            opacity: 0;
+            filter: blur(10px);
+            pointer-events: none;
+        }
+
+        .auth-bg-decor {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .auth-bg-decor span {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.14;
+            animation: floatUp linear infinite;
+        }
+
+        @keyframes floatUp {
+            from { transform: translateY(110vh) rotate(0deg); }
+            to { transform: translateY(-15vh) rotate(360deg); }
+        }
+
+        .auth-card {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+            color: white;
+            animation: authCardIn 0.6s ease-out;
+            box-sizing: border-box;
+        }
+
+        @keyframes authCardIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes authCardOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(-30px); }
+        }
+
+        @keyframes authCardBackIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .auth-card-hide {
+            animation: authCardOut 0.28s ease forwards;
+        }
+
+        .auth-card-show {
+            animation: authCardBackIn 0.28s ease forwards;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .auth-header h2 {
+            font-size: 1.6rem;
+            margin-bottom: 0.3rem;
+            letter-spacing: 0.5px;
+        }
+
+        .auth-subtitle {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .auth-message {
+            display: none;
+            padding: 0.65rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 0.9rem;
+            text-align: center;
+            animation: messageIn 0.3s ease;
+        }
+
+        .auth-message.active {
+            display: block;
+        }
+
+        .auth-message-error {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid rgba(220, 53, 69, 0.5);
+            color: #ffc4c9;
+        }
+
+        .auth-message-success {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid rgba(40, 167, 69, 0.5);
+            color: #b8f2ce;
+        }
+
+        @keyframes messageIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 1.1rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 0.35rem;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.25s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #a8d5ba;
+            background: rgba(255, 255, 255, 0.18);
+            box-shadow: 0 0 0 3px rgba(168, 213, 186, 0.25);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 0.85rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-family: inherit;
+        }
+
+        .auth-btn-primary {
+            background: linear-gradient(135deg, #a8d5ba 0%, #6fae82 100%);
+            color: #1a3d0d;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .auth-btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .auth-btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .auth-btn-secondary {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-top: 0.5rem;
+        }
+
+        .auth-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .btn-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-top-color: #1a3d0d;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .app-fade-in {
+            animation: appFadeIn 0.8s ease-out;
+        }
+
+        @keyframes appFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 480px) {
+            .auth-card {
+                padding: 2rem 1.5rem;
+                border-radius: 16px;
+            }
+
+            .auth-icon {
+                font-size: 2rem;
+            }
+
+            .auth-header h2 {
+                font-size: 1.35rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- ============================================================
+         Authentication - Login / Create Account screens
+         ============================================================ -->
+    <div id="authContainer" class="auth-container">
+        <div class="auth-bg-decor" aria-hidden="true">
+            <span style="left: 6%; animation-duration: 14s; animation-delay: 0s;">✈️</span>
+            <span style="left: 20%; animation-duration: 18s; animation-delay: 2s;">🌍</span>
+            <span style="left: 38%; animation-duration: 15s; animation-delay: 4s;">🗺️</span>
+            <span style="left: 56%; animation-duration: 20s; animation-delay: 1s;">🧳</span>
+            <span style="left: 74%; animation-duration: 16s; animation-delay: 3s;">🏝️</span>
+            <span style="left: 88%; animation-duration: 19s; animation-delay: 5s;">🧭</span>
+        </div>
+
+        <!-- Login Card -->
+        <div class="auth-card" id="loginCard">
+            <div class="auth-header">
+                <div class="auth-icon">✈️</div>
+                <h2>Welcome Back</h2>
+                <p class="auth-subtitle">Sign in to explore my travel map</p>
+            </div>
+            <div id="loginMessage" class="auth-message"></div>
+            <form id="loginForm" class="auth-form" novalidate>
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" required placeholder="you@example.com" autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••" autocomplete="current-password">
+                </div>
+                <button type="submit" class="auth-btn auth-btn-primary" id="loginSubmitBtn">
+                    <span class="btn-text">Login</span>
+                    <span class="btn-spinner" style="display: none;"></span>
+                </button>
+            </form>
+            <div class="auth-switch">
+                <span>Don't have an account?</span><br>
+                <button type="button" class="auth-btn auth-btn-secondary" id="showSignupBtn">Create Account</button>
+            </div>
+        </div>
+
+        <!-- Create Account Card -->
+        <div class="auth-card" id="signupCard" style="display: none;">
+            <div class="auth-header">
+                <div class="auth-icon">🌍</div>
+                <h2>Create Account</h2>
+                <p class="auth-subtitle">Sign up to access my travel map</p>
+            </div>
+            <div id="signupMessage" class="auth-message"></div>
+            <form id="signupForm" class="auth-form" novalidate>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" required placeholder="you@example.com" autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" required placeholder="••••••••" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" required placeholder="••••••••" autocomplete="new-password">
+                </div>
+                <button type="submit" class="auth-btn auth-btn-primary" id="signupSubmitBtn">
+                    <span class="btn-text">Create Account</span>
+                    <span class="btn-spinner" style="display: none;"></span>
+                </button>
+            </form>
+            <div class="auth-switch">
+                <span>Already have an account?</span><br>
+                <button type="button" class="auth-btn auth-btn-secondary" id="showLoginBtn">Back to Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         Travel site - hidden until logged in
+         ============================================================ -->
+    <div id="appContent" class="app-content" style="display: none;">
     <header>
         <div class="header-content">
             <h1>✈️ My Travel Experiences</h1>
             <p class="subtitle">Click destinations on the map to explore my photos and stories</p>
         </div>
+        <button class="logout-btn" id="logoutBtn" title="Log out">🚪 Logout</button>
         <div class="header-search search-box-header collapsed" id="searchBoxContainer">
             <div class="search-icon" id="searchIcon">🔍</div>
             <div class="search-input-wrapper" id="searchInputWrapper">
@@ -884,7 +1275,7 @@
             </div>
         </div>
     </header>
-    
+
     <div class="search-overlay" id="searchOverlay">
         <div class="search-overlay-bar">
             <span class="search-overlay-icon">🔍</span>
@@ -936,11 +1327,213 @@
     </div>
     
     <div id="location-detail" style="display: none; padding: 2rem; background: white; min-height: 100vh;"></div>
-    
+    </div>
+    <!-- /#appContent -->
+
     <script>
+        // ============================================================
+        // Authentication
+        // ============================================================
+        const AUTH_API_BASE = 'https://travel-api.umarshasan2.workers.dev';
+
+        const authContainer = document.getElementById('authContainer');
+        const appContent = document.getElementById('appContent');
+        const loginCard = document.getElementById('loginCard');
+        const signupCard = document.getElementById('signupCard');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const loginMessage = document.getElementById('loginMessage');
+        const signupMessage = document.getElementById('signupMessage');
+        const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+        const signupSubmitBtn = document.getElementById('signupSubmitBtn');
+        const showSignupBtn = document.getElementById('showSignupBtn');
+        const showLoginBtn = document.getElementById('showLoginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // ---- Session ----
+        function isLoggedIn() {
+            return localStorage.getItem('travelLoggedIn') === 'true';
+        }
+
+        function setLoggedIn() {
+            localStorage.setItem('travelLoggedIn', 'true');
+        }
+
+        function clearLoggedIn() {
+            localStorage.removeItem('travelLoggedIn');
+        }
+
+        // ---- UI helpers ----
+        function showAuthMessage(el, text, type) {
+            el.textContent = text;
+            el.className = 'auth-message active auth-message-' + type;
+        }
+
+        function clearAuthMessage(el) {
+            el.textContent = '';
+            el.className = 'auth-message';
+        }
+
+        function setButtonLoading(btn, loading) {
+            btn.disabled = loading;
+            btn.querySelector('.btn-text').style.visibility = loading ? 'hidden' : 'visible';
+            btn.querySelector('.btn-spinner').style.display = loading ? 'inline-block' : 'none';
+        }
+
+        function switchToSignup() {
+            clearAuthMessage(loginMessage);
+            loginCard.classList.add('auth-card-hide');
+            setTimeout(() => {
+                loginCard.style.display = 'none';
+                loginCard.classList.remove('auth-card-hide');
+                signupCard.style.display = 'block';
+                signupCard.classList.add('auth-card-show');
+            }, 280);
+        }
+
+        function switchToLogin() {
+            clearAuthMessage(signupMessage);
+            signupCard.classList.add('auth-card-hide');
+            setTimeout(() => {
+                signupCard.style.display = 'none';
+                signupCard.classList.remove('auth-card-hide', 'auth-card-show');
+                loginCard.style.display = 'block';
+            }, 280);
+        }
+
+        function showApp() {
+            authContainer.classList.add('auth-fade-out');
+            setTimeout(() => {
+                authContainer.style.display = 'none';
+                appContent.style.display = 'flex';
+                appContent.classList.add('app-fade-in');
+                startTravelApp();
+            }, 600);
+        }
+
+        function showAuthScreen() {
+            appContent.style.display = 'none';
+            appContent.classList.remove('app-fade-in');
+            authContainer.style.display = 'flex';
+            authContainer.classList.remove('auth-fade-out');
+            signupCard.style.display = 'none';
+            signupCard.classList.remove('auth-card-hide', 'auth-card-show');
+            loginCard.style.display = 'block';
+            loginForm.reset();
+            signupForm.reset();
+            clearAuthMessage(loginMessage);
+            clearAuthMessage(signupMessage);
+        }
+
+        // ---- Login ----
+        async function handleLogin(e) {
+            e.preventDefault();
+            clearAuthMessage(loginMessage);
+
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showAuthMessage(loginMessage, 'Please enter both email and password.', 'error');
+                return;
+            }
+
+            setButtonLoading(loginSubmitBtn, true);
+
+            try {
+                const response = await fetch(`${AUTH_API_BASE}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json().catch(() => null);
+
+                if (response.ok && data && data.success) {
+                    setLoggedIn();
+                    showAuthMessage(loginMessage, data.message || 'Login successful.', 'success');
+                    setTimeout(showApp, 500);
+                } else {
+                    showAuthMessage(loginMessage, (data && data.message) || 'Invalid email or password.', 'error');
+                }
+            } catch (err) {
+                showAuthMessage(loginMessage, 'Network error. Please check your connection and try again.', 'error');
+            } finally {
+                setButtonLoading(loginSubmitBtn, false);
+            }
+        }
+
+        // ---- Signup ----
+        async function handleSignup(e) {
+            e.preventDefault();
+            clearAuthMessage(signupMessage);
+
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+
+            if (!email) {
+                showAuthMessage(signupMessage, 'Email is required.', 'error');
+                return;
+            }
+            if (!password) {
+                showAuthMessage(signupMessage, 'Password is required.', 'error');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showAuthMessage(signupMessage, 'Passwords do not match.', 'error');
+                return;
+            }
+
+            setButtonLoading(signupSubmitBtn, true);
+
+            try {
+                const response = await fetch(`${AUTH_API_BASE}/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json().catch(() => null);
+
+                if (response.ok && data && data.success) {
+                    showAuthMessage(signupMessage, data.message || 'Account created successfully.', 'success');
+                    setTimeout(() => {
+                        switchToLogin();
+                    }, 1200);
+                } else {
+                    showAuthMessage(signupMessage, (data && data.message) || 'Email already exists.', 'error');
+                }
+            } catch (err) {
+                showAuthMessage(signupMessage, 'Server unavailable. Please try again later.', 'error');
+            } finally {
+                setButtonLoading(signupSubmitBtn, false);
+            }
+        }
+
+        // ---- Logout ----
+        function handleLogout() {
+            clearLoggedIn();
+            showAuthScreen();
+        }
+
+        // ---- Wire up auth events ----
+        loginForm.addEventListener('submit', handleLogin);
+        signupForm.addEventListener('submit', handleSignup);
+        showSignupBtn.addEventListener('click', switchToSignup);
+        showLoginBtn.addEventListener('click', switchToLogin);
+        logoutBtn.addEventListener('click', handleLogout);
+
+        if (!isLoggedIn()) {
+            appContent.style.display = 'none';
+        }
+
+        // ============================================================
+        // Travel Site
+        // ============================================================
         let markers = [];
         let globalMap = null;
-        
+
         // Define photo albums - each location gets its own album ID
         // albumId: unique identifier, albumLink: Google Drive folder link
         const albums = {
@@ -1229,22 +1822,24 @@
             { name: 'Wellington, New Zealand', coords: [-41.2865, 174.7762], year: 2026, description: 'Capital city nestled between harbor and hills', albumId: 'wellington', country: 'New Zealand' }
         ];
         
-        // Check if we're on a location detail page
-        const urlParams = new URLSearchParams(window.location.search);
-        const locationIndex = urlParams.get('location');
-        const viewType = urlParams.get('view');
-        
-        if (viewType === 'all-locations') {
-            renderAllLocationsPage();
-        } else if (locationIndex !== null) {
-            showLocationDetail(parseInt(locationIndex));
-        } else {
-            // Show home page with map
-            initializeMap();
-            setupSearch();
-            setupCollapsibleSearch();
+        function startTravelApp() {
+            // Check if we're on a location detail page
+            const urlParams = new URLSearchParams(window.location.search);
+            const locationIndex = urlParams.get('location');
+            const viewType = urlParams.get('view');
+
+            if (viewType === 'all-locations') {
+                renderAllLocationsPage();
+            } else if (locationIndex !== null) {
+                showLocationDetail(parseInt(locationIndex));
+            } else {
+                // Show home page with map
+                initializeMap();
+                setupSearch();
+                setupCollapsibleSearch();
+            }
         }
-        
+
         function initializeMap() {
             document.getElementById('map').style.display = 'block';
             document.getElementById('locationsList').parentElement.parentElement.style.display = 'flex';
@@ -1692,6 +2287,15 @@
             `;
             card.addEventListener('click', () => openLocationDetail(index));
             list.appendChild(card);
+        }
+
+        // ---- Initial session check ----
+        // Runs last so every const/let/function above is fully initialized
+        // before startTravelApp() (which depends on them) can execute.
+        if (isLoggedIn()) {
+            authContainer.style.display = 'none';
+            appContent.style.display = 'flex';
+            startTravelApp();
         }
     </script>
     
