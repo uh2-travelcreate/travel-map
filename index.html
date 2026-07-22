@@ -1025,6 +1025,14 @@
             color: rgba(255, 255, 255, 0.7);
         }
 
+        .auth-note {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.55);
+            text-align: center;
+            margin-top: 0.6rem;
+            line-height: 1.4;
+        }
+
         .auth-message {
             display: none;
             padding: 0.65rem 0.9rem;
@@ -1217,6 +1225,7 @@
                     <span class="btn-text">Login</span>
                     <span class="btn-spinner" style="display: none;"></span>
                 </button>
+                <button type="button" class="auth-btn auth-btn-secondary" id="goToVerifyBtn" style="display: none;">Enter verification code</button>
             </form>
             <div class="auth-switch">
                 <span>Don't have an account?</span><br>
@@ -1250,9 +1259,35 @@
                     <span class="btn-spinner" style="display: none;"></span>
                 </button>
             </form>
+            <p class="auth-note">New accounts require email verification and manual approval — please allow up to 24 hours.</p>
             <div class="auth-switch">
                 <span>Already have an account?</span><br>
                 <button type="button" class="auth-btn auth-btn-secondary" id="showLoginBtn">Back to Login</button>
+            </div>
+        </div>
+
+        <!-- Verify Email Card -->
+        <div class="auth-card" id="verifyCard" style="display: none;">
+            <div class="auth-header">
+                <div class="auth-icon">📧</div>
+                <h2>Verify Your Email</h2>
+                <p class="auth-subtitle">Enter the 6-digit code sent to <span id="verifyEmailDisplay"></span></p>
+            </div>
+            <div id="verifyMessage" class="auth-message"></div>
+            <form id="verifyForm" class="auth-form" novalidate>
+                <div class="form-group">
+                    <label for="verifyCode">Verification Code</label>
+                    <input type="text" id="verifyCode" required placeholder="123456" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+                </div>
+                <button type="submit" class="auth-btn auth-btn-primary" id="verifySubmitBtn">
+                    <span class="btn-text">Verify Email</span>
+                    <span class="btn-spinner" style="display: none;"></span>
+                </button>
+            </form>
+            <p class="auth-note">Verifying starts the manual approval process — please allow up to 24 hours for access.</p>
+            <div class="auth-switch">
+                <span>Didn't get a code?</span><br>
+                <button type="button" class="auth-btn auth-btn-secondary" id="resendCodeBtn">Resend Code</button>
             </div>
         </div>
     </div>
@@ -1340,15 +1375,24 @@
         const appContent = document.getElementById('appContent');
         const loginCard = document.getElementById('loginCard');
         const signupCard = document.getElementById('signupCard');
+        const verifyCard = document.getElementById('verifyCard');
         const loginForm = document.getElementById('loginForm');
         const signupForm = document.getElementById('signupForm');
+        const verifyForm = document.getElementById('verifyForm');
         const loginMessage = document.getElementById('loginMessage');
         const signupMessage = document.getElementById('signupMessage');
+        const verifyMessage = document.getElementById('verifyMessage');
         const loginSubmitBtn = document.getElementById('loginSubmitBtn');
         const signupSubmitBtn = document.getElementById('signupSubmitBtn');
+        const verifySubmitBtn = document.getElementById('verifySubmitBtn');
         const showSignupBtn = document.getElementById('showSignupBtn');
         const showLoginBtn = document.getElementById('showLoginBtn');
+        const goToVerifyBtn = document.getElementById('goToVerifyBtn');
+        const resendCodeBtn = document.getElementById('resendCodeBtn');
+        const verifyEmailDisplay = document.getElementById('verifyEmailDisplay');
         const logoutBtn = document.getElementById('logoutBtn');
+
+        let pendingVerifyEmail = '';
 
         // ---- Session ----
         function isLoggedIn() {
@@ -1380,12 +1424,19 @@
             btn.querySelector('.btn-spinner').style.display = loading ? 'inline-block' : 'none';
         }
 
+        function hideAuthCards() {
+            [loginCard, signupCard, verifyCard].forEach(card => {
+                card.style.display = 'none';
+                card.classList.remove('auth-card-hide', 'auth-card-show');
+            });
+        }
+
         function switchToSignup() {
             clearAuthMessage(loginMessage);
-            loginCard.classList.add('auth-card-hide');
+            const current = [loginCard, signupCard, verifyCard].find(c => c.style.display !== 'none');
+            if (current) current.classList.add('auth-card-hide');
             setTimeout(() => {
-                loginCard.style.display = 'none';
-                loginCard.classList.remove('auth-card-hide');
+                hideAuthCards();
                 signupCard.style.display = 'block';
                 signupCard.classList.add('auth-card-show');
             }, 280);
@@ -1393,11 +1444,26 @@
 
         function switchToLogin() {
             clearAuthMessage(signupMessage);
-            signupCard.classList.add('auth-card-hide');
+            goToVerifyBtn.style.display = 'none';
+            const current = [loginCard, signupCard, verifyCard].find(c => c.style.display !== 'none');
+            if (current) current.classList.add('auth-card-hide');
             setTimeout(() => {
-                signupCard.style.display = 'none';
-                signupCard.classList.remove('auth-card-hide', 'auth-card-show');
+                hideAuthCards();
                 loginCard.style.display = 'block';
+            }, 280);
+        }
+
+        function switchToVerify(email) {
+            pendingVerifyEmail = email;
+            verifyEmailDisplay.textContent = email;
+            clearAuthMessage(verifyMessage);
+            verifyForm.reset();
+            const current = [loginCard, signupCard, verifyCard].find(c => c.style.display !== 'none');
+            if (current) current.classList.add('auth-card-hide');
+            setTimeout(() => {
+                hideAuthCards();
+                verifyCard.style.display = 'block';
+                verifyCard.classList.add('auth-card-show');
             }, 280);
         }
 
@@ -1416,19 +1482,22 @@
             appContent.classList.remove('app-fade-in');
             authContainer.style.display = 'flex';
             authContainer.classList.remove('auth-fade-out');
-            signupCard.style.display = 'none';
-            signupCard.classList.remove('auth-card-hide', 'auth-card-show');
+            hideAuthCards();
+            goToVerifyBtn.style.display = 'none';
             loginCard.style.display = 'block';
             loginForm.reset();
             signupForm.reset();
+            verifyForm.reset();
             clearAuthMessage(loginMessage);
             clearAuthMessage(signupMessage);
+            clearAuthMessage(verifyMessage);
         }
 
         // ---- Login ----
         async function handleLogin(e) {
             e.preventDefault();
             clearAuthMessage(loginMessage);
+            goToVerifyBtn.style.display = 'none';
 
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
@@ -1455,6 +1524,9 @@
                     setTimeout(showApp, 500);
                 } else {
                     showAuthMessage(loginMessage, (data && data.message) || 'Invalid email or password.', 'error');
+                    if (data && data.reason === 'unverified') {
+                        goToVerifyBtn.style.display = 'block';
+                    }
                 }
             } catch (err) {
                 showAuthMessage(loginMessage, 'Network error. Please check your connection and try again.', 'error');
@@ -1499,7 +1571,7 @@
                 if (response.ok && data && data.success) {
                     showAuthMessage(signupMessage, data.message || 'Account created successfully.', 'success');
                     setTimeout(() => {
-                        switchToLogin();
+                        switchToVerify(email);
                     }, 1200);
                 } else {
                     showAuthMessage(signupMessage, (data && data.message) || 'Email already exists.', 'error');
@@ -1511,6 +1583,83 @@
             }
         }
 
+        // ---- Verify Email ----
+        async function handleVerifyCode(e) {
+            e.preventDefault();
+            clearAuthMessage(verifyMessage);
+
+            const code = document.getElementById('verifyCode').value.trim();
+
+            if (!code) {
+                showAuthMessage(verifyMessage, 'Please enter the verification code.', 'error');
+                return;
+            }
+
+            setButtonLoading(verifySubmitBtn, true);
+
+            try {
+                const response = await fetch(`${AUTH_API_BASE}/verify-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: pendingVerifyEmail, code })
+                });
+
+                const data = await response.json().catch(() => null);
+
+                if (response.ok && data && data.success) {
+                    showAuthMessage(verifyMessage, data.message || 'Email verified.', 'success');
+                    const verifiedMessage = data.message || 'Email verified.';
+                    setTimeout(() => {
+                        switchToLogin();
+                        showAuthMessage(loginMessage, verifiedMessage, 'success');
+                    }, 1500);
+                } else {
+                    showAuthMessage(verifyMessage, (data && data.message) || 'Incorrect or expired code.', 'error');
+                }
+            } catch (err) {
+                showAuthMessage(verifyMessage, 'Network error. Please check your connection and try again.', 'error');
+            } finally {
+                setButtonLoading(verifySubmitBtn, false);
+            }
+        }
+
+        async function handleResendCode() {
+            clearAuthMessage(verifyMessage);
+            resendCodeBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${AUTH_API_BASE}/resend-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: pendingVerifyEmail })
+                });
+
+                const data = await response.json().catch(() => null);
+
+                if (response.ok && data && data.success) {
+                    showAuthMessage(verifyMessage, data.message || 'A new code has been sent.', 'success');
+                } else {
+                    showAuthMessage(verifyMessage, (data && data.message) || 'Could not resend the code.', 'error');
+                }
+            } catch (err) {
+                showAuthMessage(verifyMessage, 'Network error. Please try again.', 'error');
+            }
+
+            let secondsLeft = 60;
+            const originalLabel = 'Resend Code';
+            const tick = () => {
+                if (secondsLeft > 0) {
+                    resendCodeBtn.textContent = `Resend Code (${secondsLeft}s)`;
+                    secondsLeft -= 1;
+                    setTimeout(tick, 1000);
+                } else {
+                    resendCodeBtn.textContent = originalLabel;
+                    resendCodeBtn.disabled = false;
+                }
+            };
+            tick();
+        }
+
         // ---- Logout ----
         function handleLogout() {
             clearLoggedIn();
@@ -1520,8 +1669,13 @@
         // ---- Wire up auth events ----
         loginForm.addEventListener('submit', handleLogin);
         signupForm.addEventListener('submit', handleSignup);
+        verifyForm.addEventListener('submit', handleVerifyCode);
         showSignupBtn.addEventListener('click', switchToSignup);
         showLoginBtn.addEventListener('click', switchToLogin);
+        resendCodeBtn.addEventListener('click', handleResendCode);
+        goToVerifyBtn.addEventListener('click', () => {
+            switchToVerify(document.getElementById('loginEmail').value.trim());
+        });
         logoutBtn.addEventListener('click', handleLogout);
 
         if (!isLoggedIn()) {
