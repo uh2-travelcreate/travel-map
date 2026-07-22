@@ -903,6 +903,22 @@
             transform: translateY(-1px);
         }
 
+        .admin-link {
+            position: absolute;
+            bottom: 0.5rem;
+            left: 1rem;
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.18);
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+            z-index: 5;
+        }
+
+        .admin-link:hover {
+            color: rgba(255, 255, 255, 0.55);
+        }
+
         /* Avoid visual overlap when the header search box expands over it */
         header:has(#searchBoxContainer.expanded) .logout-btn {
             opacity: 0;
@@ -1203,6 +1219,7 @@
             <span style="left: 74%; animation-duration: 16s; animation-delay: 3s;">🏝️</span>
             <span style="left: 88%; animation-duration: 19s; animation-delay: 5s;">🧭</span>
         </div>
+        <a href="https://travel-api.umarshasan2.workers.dev/admin" target="_blank" rel="noopener noreferrer" class="admin-link">admin</a>
 
         <!-- Login Card -->
         <div class="auth-card" id="loginCard">
@@ -1302,6 +1319,7 @@
             <p class="subtitle">Click destinations on the map to explore my photos and stories</p>
         </div>
         <button class="logout-btn" id="logoutBtn" title="Log out">🚪 Logout</button>
+        <a href="https://travel-api.umarshasan2.workers.dev/admin" target="_blank" rel="noopener noreferrer" class="admin-link">admin</a>
         <div class="header-search search-box-header collapsed" id="searchBoxContainer">
             <div class="search-icon" id="searchIcon">🔍</div>
             <div class="search-input-wrapper" id="searchInputWrapper">
